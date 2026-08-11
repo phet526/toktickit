@@ -31,3 +31,4 @@ npm run dev
 
 ### 4. ฟีเจอร์ที่พัฒนาแล้ว (Features)
 - **Issue 2:** เพิ่ม API Health Check สำหรับตรวจสอบสถานะเซิร์ฟเวอร์ และแสดงผลผ่านหน้าเว็บ React
+- **Issue 3:** จัดเตรียมฐานข้อมูล (Database Preparation) โดยสร้าง Prisma Model สำหรับ `Category` และรัน Migration เพื่อสร้างตารางใน PostgreSQL พร้อมทั้งเขียนสคริปต์ Seed ข้อมูลหมวดหมู่เริ่มต้น 4 หมวดหมู่ (Account and Access, Hardware, Software, Network) โดยเขียนโค้ดป้องกันไม่ให้เกิดข้อมูลซ้ำซ้อนเมื่อรันสคริปต์ซ้ำ
