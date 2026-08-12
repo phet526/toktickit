@@ -9,7 +9,7 @@
 |https://github.com/phet526/toktickit/pull/5| feature/1-project-foundation |Approved  |
 |https://github.com/phet526/toktickit/pull/6| feature/2-health-check | Approved |
 |https://github.com/phet526/toktickit/pull/7| feature/3-category-seed |  Approved|
-|| feature/4-category-list |  |
+|https://github.com/phet526/toktickit/pull/8| feature/4-category-list |  |
 
 Reviewer comment I received: <...>
 How I responded: <...>
@@ -40,3 +40,5 @@ Partner's response: <...>
 ฝั่ง Frontend: หน้าเว็บดึงข้อมูลมาแสดงผลตอนที่ระบบรันปกติ (Online) ได้ถูกต้อง และที่ชอบคือทำ Error Handling เอาไว้ดีมากครับ ลองจำลองเคสปิด Backend ทิ้ง หน้าเว็บก็ดักจับ Error ได้และเปลี่ยนเป็นกรอบแจ้งเตือน Offline สีแดงให้ผู้ใช้งานเข้าใจได้ง่ายมากๆ
 
 โค้ดคลีนและเทสผ่าน 100% ครับ Approve ให้เลย กด Merge แล้วลุย Issue ต่อไปได้เลย
+
+**My comment (Issue 3):** ตรวจ Issue 3 เรียบร้อย ตาราง Category และไฟล์ Migration สร้างมาถูกต้อง, ทดสอบรันคำสั่ง Seed ซ้ำ 2 รอบแล้วผ่าน ไม่มีข้อมูลเบิ้ล
