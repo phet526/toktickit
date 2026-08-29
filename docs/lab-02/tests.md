@@ -15,6 +15,7 @@ End-to-End (E2E) Tests: ใช้ Playwright จำลองการใช้�
 | API-04 | API | AC-06, BR-06 | ทำการ Soft-remove ไฟล์แนบ พร้อมแนบเหตุผล | HTTP 200; Metadata อัปเดตสถานะเป็นถูกลบ และไฟล์ดาวน์โหลดไม่ได้อีก | `server/tests/lab-02/attachments.api.test.ts` | TBD |
 | API-05 | API | AC-04, FR-03 | เรียกดูรายการตั๋วพร้อมใส่ Search และ Pagination Limit | HTTP 200; คืนค่ารายการตั๋วที่ตรงเงื่อนไขพร้อม Metadata สำหรับแบ่งหน้า | `server/tests/lab-02/my-tickets.api.test.ts` | TBD |
 | API-06 | API | BR-10, FR-05 | อัปโหลดไฟล์ล้มเหลวหลังจากสร้างตั๋วสำเร็จ | HTTP 400 (สำหรับไฟล์); แต่เมื่อเรียกดูตั๋วใบนั้นจะพบว่ายังคงอยู่ ไม่โดน Rollback | `server/tests/lab-02/attachments.api.test.ts` | TBD |
+| API-07 | API | AC-06, BR-06 | จำลองการพยายามดาวน์โหลดไฟล์ที่ถูก Soft-remove ไปแล้ว | HTTP 403 (หรือ 404); ระบบต้อง Block และแสดง Error ปฏิเสธการดาวน์โหลด | `server/tests/lab-02/attachments.api.test.ts` | TBD |
 | E2E-01 | E2E | AC-01, AC-04, NFR-01, NFR-02 | จำลองผู้ใช้งานตั้งแต่สร้างตั๋ว ค้นหาตั๋ว และตรวจสอบ Responsive | สร้างตั๋วสำเร็จ และเมื่อลดขนาดจอ Mobile จะต้องไม่เกิด Scroll แนวนอน | `e2e/lab-02/requester-ticket-flow.spec.ts` | TBD |
 ## 3. Acceptance-Criterion Traceability
 Requirement / AC | Covering Test IDs
@@ -24,7 +25,7 @@ AC-02, FR-01, BR-03 (บังคับให้เลือก Requester ก่
 AC-03, BR-04 (ป้องกันการเข้าถึงตั๋วข้ามคน) | API-02
 AC-04, FR-03 (ค้นหาและแบ่งหน้าตั๋ว) | API-05, E2E-01
 AC-05, BR-05 (การตรวจสอบไฟล์แนบ) | API-03
-AC-06, BR-06 (การลบไฟล์แบบ Soft-removal) | API-04
+AC-06, BR-06 (การลบไฟล์แบบ Soft-removal) | API-04, API-07
 BR-10, FR-05 (สร้างตั๋วผ่านแต่อัปโหลดล้มเหลว) | API-06
 NFR-01, NFR-02 (Responsive & Theme) | E2E-01
 NFR-04 (Loading State) | UI-01

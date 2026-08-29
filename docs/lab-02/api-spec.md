@@ -104,6 +104,18 @@ POST /api/v1/tickets/:id/attachments
 
  Responses: 201 Created (สำเร็จ), 400 Bad Request (ไฟล์ผิดประเภทหรือใหญ่เกินไป)
 
+GET /api/v1/tickets/:id/attachments/:attachmentId
+
+ Purpose: ดึงข้อมูล Metadata ของไฟล์แนบ (retrieve Attachment metadata)
+
+ Responses: 200 OK (คืนค่า Metadata), 404 Not Found (ไม่พบไฟล์)
+
+GET /api/v1/tickets/:id/attachments/:attachmentId/download
+
+ Purpose: ดาวน์โหลดไฟล์แนบ (download an active Attachment)
+
+ Responses: 200 OK (Stream ไฟล์กลับไปให้ผู้ใช้), 403/404 (หากไฟล์ถูก Soft-remove ไปแล้ว)
+
 DELETE /api/v1/tickets/:id/attachments/:attachmentId
 
  Purpose: ลบไฟล์แนบแบบ Soft-removal
