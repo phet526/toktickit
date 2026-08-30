@@ -27,7 +27,8 @@ async function main() {
     "HRIS",
     "CRM",
     "Email System",
-    "VPN"
+    "VPN",
+    "Internal Portal"
   ];
   for (const name of systems) {
     await prisma.relatedSystem.upsert({
@@ -43,6 +44,8 @@ async function main() {
     { name: "Requester A", email: "requester_a@example.com", isActive: true },
     { name: "Requester B", email: "requester_b@example.com", isActive: true },
     { name: "Requester C (Inactive)", email: "requester_c@example.com", isActive: false },
+    { name: "Requester D", email: "requester_d@example.com", isActive: true },
+    { name: "Requester E", email: "requester_e@example.com", isActive: true },
   ];
   for (const req of requesters) {
     await prisma.developmentRequester.upsert({
