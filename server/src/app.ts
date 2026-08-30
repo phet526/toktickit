@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import { getPrisma } from "./prisma.js";
+import ticketsRouter from "./routes/tickets.router.js";
 // getPrisma() is your lazy database handle. Call it INSIDE a route when you
 // need the DB (Issue 4). It is intentionally unused until then.
 void getPrisma;
@@ -11,6 +12,9 @@ export const app = express();
 
 app.use(cors());          // already wired: lets the Vite dev server call this API
 app.use(express.json());
+
+// Mount the tickets router for Issue 12
+app.use("/api/v1/tickets", ticketsRouter);
 
 // ---------------------------------------------------------------------------
 // Issue 2 — API health check
@@ -51,4 +55,20 @@ app.get("/api/categories", async (_req: Request, res: Response) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+// GET /api/v1/related-systems for Ticket Creation form dropdown
+app.get("/api/v1/related-systems", async (_req: Request, res: Response) => {
+  try {
+    const prisma = getPrisma();
+    const systems = await prisma.relatedSystem.findMany({
+      select: { id: true, name: true },
+      orderBy: { id: 'asc' },
+    });
+    res.status(200).json(systems);
+  } catch (error) {
+    console.error("Error fetching related systems:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 export default app;

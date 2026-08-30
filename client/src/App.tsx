@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { checkSystem, Category } from "./api.js";
+import CreateTicket from "./pages/CreateTicket.js";
 
 // UI states you must handle for Issue 4: idle, loading, success, error.
 type UiState = "idle" | "loading" | "success" | "error";
@@ -83,6 +84,10 @@ export default function App() {
           <p className="text-danger">{errorMessage}</p>
         </div>
       )}
+      
+      {/* เพิ่มหน้า Create Ticket ไว้ด้านล่างชั่วคราวเพื่อเทส Issue #12 */}
+      <hr className="my-5" />
+      <CreateTicket />
     </div>
   );
 }
