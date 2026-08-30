@@ -7,6 +7,8 @@ End-to-End (E2E) Tests: ใช้ Playwright จำลองการใช้�
 **## 2. Planned Tests**
 | Test ID | Type | Requirement (FR/BR/AC) | What It Tests | Expected Result | Automated Test File | Final |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| UNIT-01 | Unit | BR-09 | ทดสอบฟังก์ชัน Ticket Number generator | คืนค่ารหัสรูปแบบ TKT-YYYY-XXXXX ได้ถูกต้อง | `server/tests/lab-02/ticket-utils.test.ts` | TBD |
+| UI-03 | UI style | NFR-02 | ทดสอบ Zen Green Theme (UI style) | ตรวจสอบว่าสี Primary Green ถูกใช้งานอย่างถูกต้องและไม่มีข้อความทับซ้อน | `client/.../lab-02_tests/style.test.tsx` | TBD |
 | API-01 | API | AC-01, FR-02, BR-01, BR-09 | สร้างตั๋วใหม่ด้วยข้อมูลที่ถูกต้องสมบูรณ์ | HTTP 201; บันทึกตั๋วลง DB สำเร็จ และคืนค่า Ticket Number ทรง TKT-YYYY-XXXXX กลับมา | `server/tests/lab-02/tickets.api.test.ts` | TBD |
 | UI-01 | UI | AC-01, NFR-04 | กด Submit ฟอร์มสร้างตั๋ว | ปุ่ม Submit จะต้องแสดงสถานะ Busy (กำลังโหลด) และถูก Disable ไว้ | `client/.../lab-02_tests/CreateTicket.test.tsx` | TBD |
 | UI-02 | UI | AC-02, FR-01, BR-03 | พยายามเข้าหน้า My Tickets โดยที่ยังไม่เลือก Development Requester | ระบบ Redirect กลับไปที่หน้า Development Requester Selection ทันที | `client/.../lab-02_tests/MyTickets.test.tsx` | TBD |

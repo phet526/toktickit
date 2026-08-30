@@ -71,11 +71,15 @@ GET /api/v1/tickets
 
   search (Optional): คำค้นหาจาก Ticket Number หรือ Summary
 
+  Filterable fields (Optional): รองรับการฟิลเตอร์ด้วย `category` หรือ `status`
+
   page (Optional): หมายเลขหน้า (Default: 1)
 
-  limit (Optional): จำนวนรายการต่อหน้า (Default: 10)
+  limit (Optional): permitted page sizes (เช่น 10, 20, 50) (Default: 10)
 
   sort (Optional): ฟิลด์สำหรับจัดเรียง (เช่น createdAt:desc)
+
+  invalid-parameter behavior: หากส่งพารามิเตอร์ที่ไม่ถูกต้องหรือไม่อยู่ในเงื่อนไข ระบบจะคืนค่า HTTP 400 Bad Request
 
  Response (200): 
   {

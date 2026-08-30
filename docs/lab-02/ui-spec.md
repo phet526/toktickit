@@ -20,3 +20,11 @@ Mobile (< 768 px): ช่องกรอกข้อมูลจะเรีย�
 Development Requester Selection: หน้าจอจำลองการล็อกอิน มีส่วนหัว TokTickIT, ข้อความอธิบาย, Dropdown เลือกผู้ใช้, และปุ่ม Continue หากไม่มีผู้ใช้ในระบบจะต้องแสดง Empty state  
 Create Ticket: ฟอร์มสร้างตั๋ว จัดกลุ่มข้อมูลระบบ (System-generated) ไว้ด้านบนสุด ตามด้วยหมวดหมู่ ช่องกรอกรายละเอียด และส่วนอัปโหลดไฟล์แนบไว้ด้านล่างสุดก่อนปุ่ม Submit  My Tickets: หน้ารายการตั๋ว มีแถบค้นหาและตัวกรองอยู่ด้านบน รายการตั๋วแสดงข้อมูลสำคัญ (เช่น Ticket Number, Summary, Status) รองรับการแบ่งหน้า (Pagination) และมีปุ่ม "Create Ticket"  
 Ticket Detail: หน้าแสดงข้อมูลตั๋วแบบอ่านได้อย่างเดียว (Read-only) โดยแยกส่วนข้อมูลตั๋วและส่วนจัดการไฟล์แนบให้เห็นชัดเจน รองรับการดาวน์โหลดและลบไฟล์ (Soft-removal)  
+
+## 5. Accessibility
+ทุกองค์ประกอบต้องมี Accessibility labels, keyboard focus ที่ชัดเจน รองรับการนำทางด้วยคีย์บอร์ดทั้งหมด
+
+## 6. Visual Checklist
+Visual inspection checklist and screenshot paths:
+- [ ] ตรวจสอบ UI ด้วยสายตาเทียบกับสเปค (Visual inspection checklist)
+- Screenshot Paths: (รออัปเดตไฟล์ /docs/screenshots/ หลังจากพัฒนาเสร็จสิ้น)

@@ -36,7 +36,7 @@ NFR-04 (Performance/UX): ปุ่ม Submit ต้องมีสถานะ B
  BR-08: Requester ไม่สามารถแก้ไขรายละเอียดตั๋ว หรือเปลี่ยนแปลงสถานะตั๋วได้ด้วยตนเองหลังจากสร้างเสร็จแล้ว
  BR-09: รูปแบบของ Ticket Number จะต้องเป็นรหัสที่ประกอบด้วยปีและเลขรันนิ่ง เช่น `TKT-YYYY-XXXXX` (ตัวอย่าง: TKT-2026-00001)
  BR-10: กรณีที่สร้างตั๋วสำเร็จแต่การอัปโหลดไฟล์ล้มเหลว ตั๋วจะยังคงถูกสร้างขึ้น แต่ระบบจะต้องแจ้งเตือนให้ผู้ใช้ทราบว่าไฟล์อัปโหลดไม่สำเร็จ
- ## 6. UI Specification Summary
+ ## 6. UI Specification Summary (reference to ui-spec.md)
  Theme & Styling: ใช้ธีม Zen Green โดยมีสี Primary green (#006B3C) สำหรับ Header และปุ่มหลัก, สี Error เป็นสีแดงเข้มพร้อมกรอบ  
  Responsive Layout: รองรับการแสดงผล 3 ขนาด ได้แก่ Desktop (หน้าจอแบ่งคอลัมน์), Tablet (2 คอลัมน์), และ Mobile (ฟิลด์เรียงซ้อนกันแนวตั้งและห้ามมี Scroll แนวนอน)  
  Form & Components: ฟิลด์ที่บังคับกรอกต้องมีเครื่องหมายดอกจันสีแดง (*), ปุ่มกดต้องมีข้อความกำกับเสมอ, แสดงข้อความ Validation error ใต้ช่องกรอกข้อมูลทันที  State Management: ต้องมีสถานะ Loading (ปุ่ม Submit แสดงสถานะกำลังโหลดและถูก Disable), Empty state (เมื่อไม่มีข้อมูล), และ Success state (แสดงหมายเลขตั๋วชัดเจนเมื่อสร้างสำเร็จ)  
@@ -46,6 +46,11 @@ User (Development Requester): เก็บข้อมูลผู้ใช้�
 Ticket: เก็บข้อมูลตั๋ว (id, ticketNo, summary, description, requestedPriority, currentStatus, timestamps) มี Foreign Key เชื่อมไปยัง Requester, Category, และ RelatedSystem  
 Category & RelatedSystem: ตารางอ้างอิง (Reference tables) สำหรับหมวดหมู่และระบบที่เกี่ยวข้อง
 Attachment: เก็บข้อมูล Metadata ของไฟล์แนบ (id, ticketId, filename, size, mimeType) และฟิลด์สำหรับการทำ Soft-removal (เช่น deletedAt, deletedReason) 
+*(เพิ่มเติม: มีการพิจารณาเรื่อง enums, indexes, and migration decisions ควบคู่กับการออกแบบฐานข้อมูล)*
+
+ ## 7.5 Database Design Justification
+ Database-design decision justification: เลือกใช้ `String @db.VarChar(150)` สำหรับ `summary` และ `VarChar(2000)` สำหรับ `description` เพื่อควบคุมขนาดข้อมูลตั้งแต่ระดับ Database ช่วยป้องกันปัญหา Memory exhaustion หากผู้ใช้ส่งข้อความยาวเกินไป
+
  ## 8. API Contract
 REST API endpoints หลักที่จะต้องพัฒนา (อยู่ภายใต้ /api/v1):  
 GET /api/tickets: ดึงรายการตั๋วของ Requester ที่กำลังเลือกอยู่ (รองรับ Query parameters: search, category, status, page, limit)  
