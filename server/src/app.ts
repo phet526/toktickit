@@ -71,8 +71,8 @@ app.get("/api/v1/related-systems", async (_req: Request, res: Response) => {
   }
 });
 
-// GET /api/v1/requesters for Mock Login
-app.get("/api/v1/requesters", async (_req: Request, res: Response) => {
+// GET /api/v1/requesters/active for Mock Login
+app.get("/api/v1/requesters/active", async (_req: Request, res: Response) => {
   try {
     const prisma = getPrisma();
     const requesters = await prisma.developmentRequester.findMany({

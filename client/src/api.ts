@@ -42,7 +42,7 @@ export async function getRelatedSystems(): Promise<RelatedSystem[]> {
 }
 
 export async function getRequesters(): Promise<DevelopmentRequester[]> {
-  const res = await fetch(`${API_URL}/api/v1/requesters`);
+  const res = await fetch(`${API_URL}/api/v1/requesters/active`);
   if (!res.ok) throw new Error("Failed to fetch requesters");
   return res.json();
 }
