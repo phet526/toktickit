@@ -103,24 +103,6 @@ export default function CreateTicket() {
 
   if (isInitializing) return <div className="container py-5">Loading...</div>;
 
-  if (!requesterId) {
-    return (
-      <div className="container py-5 text-center">
-        <h2 className="text-danger">No Development Requester Selected</h2>
-        <p>Please select a requester to continue. (Simulated Authentication)</p>
-        <button 
-          className="btn btn-outline-success mt-3"
-          onClick={() => {
-            localStorage.setItem("requesterId", "1");
-            window.location.reload();
-          }}
-        >
-          Quick Login (จำลองล็อกอินเป็น Requester 1)
-        </button>
-      </div>
-    );
-  }
-
   if (successTicketNo) {
     return (
       <div className="container py-5" style={{ maxWidth: 640 }}>

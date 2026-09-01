@@ -10,6 +10,11 @@ export interface RelatedSystem {
   name: string;
 }
 
+export interface DevelopmentRequester {
+  id: number;
+  name: string;
+}
+
 export interface SystemStatus {
   online: boolean;
   categories: Category[];
@@ -33,6 +38,12 @@ export async function checkSystem(): Promise<SystemStatus> {
 export async function getRelatedSystems(): Promise<RelatedSystem[]> {
   const res = await fetch(`${API_URL}/api/v1/related-systems`);
   if (!res.ok) throw new Error("Failed to fetch related systems");
+  return res.json();
+}
+
+export async function getRequesters(): Promise<DevelopmentRequester[]> {
+  const res = await fetch(`${API_URL}/api/v1/requesters`);
+  if (!res.ok) throw new Error("Failed to fetch requesters");
   return res.json();
 }
 

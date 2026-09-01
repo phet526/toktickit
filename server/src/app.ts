@@ -71,4 +71,20 @@ app.get("/api/v1/related-systems", async (_req: Request, res: Response) => {
   }
 });
 
+// GET /api/v1/requesters for Mock Login
+app.get("/api/v1/requesters", async (_req: Request, res: Response) => {
+  try {
+    const prisma = getPrisma();
+    const requesters = await prisma.developmentRequester.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true },
+      orderBy: { id: 'asc' },
+    });
+    res.status(200).json(requesters);
+  } catch (error) {
+    console.error("Error fetching requesters:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 export default app;

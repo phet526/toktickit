@@ -20,14 +20,6 @@ describe("CreateTicket Component", () => {
     vi.mocked(api.getRelatedSystems).mockResolvedValue([{ id: 1, name: "Email" }] as any);
   });
 
-  it("should display empty state if no requesterId in localStorage", async () => {
-    render(<CreateTicket />);
-    // Wait for the isInitializing state to resolve
-    await waitFor(() => {
-      expect(screen.getByText("No Development Requester Selected")).toBeInTheDocument();
-    });
-  });
-
   it("should show inline validation errors if form submitted empty", async () => {
     localStorage.setItem("requesterId", "1");
     render(<CreateTicket />);
