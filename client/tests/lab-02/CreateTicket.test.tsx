@@ -40,4 +40,27 @@ describe("CreateTicket Component", () => {
       expect(screen.getByText("Please select a related system.")).toBeInTheDocument();
     });
   });
+
+  it("should display error if more than 5 files are selected", async () => {
+    localStorage.setItem("requesterId", "1");
+    render(<CreateTicket />);
+    
+    await waitFor(() => {
+      expect(screen.getByText("Create New Ticket")).toBeInTheDocument();
+    });
+
+    const fileInput = screen.getByLabelText("File Attachment");
+    
+    // Create an array of 6 dummy files
+    const mockFiles = Array.from({ length: 6 }).map((_, i) => 
+      new File(["content"], `test${i}.jpg`, { type: "image/jpeg" })
+    );
+
+    // Simulate selecting 6 files
+    fireEvent.change(fileInput, { target: { files: mockFiles } });
+
+    await waitFor(() => {
+      expect(screen.getByText("You can only select up to 5 files.")).toBeInTheDocument();
+    });
+  });
 });

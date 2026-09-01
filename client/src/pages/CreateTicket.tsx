@@ -14,13 +14,14 @@ export default function CreateTicket() {
   const [requestedPriority, setRequestedPriority] = useState("LOW");
   const [summary, setSummary] = useState("");
   const [description, setDescription] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
 
   // UI State
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successTicketNo, setSuccessTicketNo] = useState("");
   const [attachmentError, setAttachmentError] = useState("");
+  const [fileError, setFileError] = useState("");
 
   useEffect(() => {
     async function loadData() {
@@ -88,10 +89,11 @@ export default function CreateTicket() {
       return;
     }
 
-    if (file) {
+    if (files.length > 0) {
       try {
         const numericId = parseInt(createdTicketNo.split("-")[2], 10);
-        await uploadAttachment(numericId, file);
+        const uploadPromises = files.map(f => uploadAttachment(numericId, f));
+        await Promise.all(uploadPromises);
       } catch (err: any) {
         setAttachmentError("Ticket was created successfully, but file upload failed: " + (err.message || "Unknown error"));
       }
@@ -99,6 +101,31 @@ export default function CreateTicket() {
 
     setSuccessTicketNo(createdTicketNo);
     setIsSubmitting(false);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError("");
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      if (selectedFiles.length > 5) {
+        setFileError("You can only select up to 5 files.");
+        e.target.value = ""; // Clear the input
+        setFiles([]);
+      } else {
+        setFiles(selectedFiles);
+      }
+    } else {
+      setFiles([]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setFiles(prev => {
+      const newFiles = prev.filter((_, i) => i !== index);
+      // Optional: If newFiles is empty, you might want to clear the file input value
+      // but since React handles the input element separately, it's mostly fine for display
+      return newFiles;
+    });
   };
 
   if (isInitializing) return <div className="container py-5">Loading...</div>;
@@ -187,8 +214,27 @@ export default function CreateTicket() {
 
         <div className="mb-4 p-3 bg-light border rounded">
           <label htmlFor="attachment" className="form-label fw-bold">Attachment (Optional)</label>
-          <p className="small text-muted mb-2">Allowed: JPG, PNG, WEBP, PDF (Max 5MB)</p>
-          <input type="file" id="attachment" className="form-control" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={e => setFile(e.target.files?.[0] || null)} aria-label="File Attachment" />
+          <p className="small text-muted mb-2">Allowed: JPG, PNG, WEBP, PDF (Max 5MB per file, Max 5 files)</p>
+          <input type="file" id="attachment" className={`form-control ${fileError ? 'is-invalid' : ''}`} multiple accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={handleFileChange} aria-label="File Attachment" />
+          {fileError && <div className="text-danger small mt-1">{fileError}</div>}
+          
+          {files.length > 0 && (
+            <div className="mt-3">
+              <p className="small text-muted mb-2">Selected Files ({files.length}/5):</p>
+              <ul className="list-group">
+                {files.map((file, index) => (
+                  <li key={index} className="list-group-item d-flex justify-content-between align-items-center py-1">
+                    <span className="small text-truncate" style={{ maxWidth: '85%' }}>
+                      {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                    </span>
+                    <button type="button" className="btn btn-sm btn-outline-danger border-0" onClick={() => removeFile(index)} aria-label={`Remove ${file.name}`}>
+                      ❌
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <div className="text-end">
