@@ -1,93 +1,46 @@
-import { useState } from "react";
-import { checkSystem, Category } from "./api.js";
+import { useState, useEffect } from "react";
 import CreateTicket from "./pages/CreateTicket.js";
 
-// UI states you must handle for Issue 4: idle, loading, success, error.
-type UiState = "idle" | "loading" | "success" | "error";
-
 export default function App() {
-  const [state, setState] = useState<UiState>("idle");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [requesterName, setRequesterName] = useState("Development Requester 1");
 
-  /*async function handleCheck() {
-    // TODO(Issue 4): set loading, call checkSystem(), then either
-    //   - success: store categories and show Online + the list, or
-    //   - error: show Offline + a useful message.
-    setState("loading");
-    setErrorMessage("");
-
-    try {
-      const response = await fetch('http://localhost:3000/api/health');
-      if (!response.ok) {
-        throw new Error("Backend unavailable");
-      }
-
-      const data = await response.json();
-      if (data.status === 'ok') {
-        setState("success");
-      } else {
-        throw new Error("Invalid status from server");
-      }
-    } catch (error) {
-      setState("error");
-      setErrorMessage("Unable to connect to TokTickIT API");
+  useEffect(() => {
+    // กำหนดชื่อจำลองให้ตรงกับที่มีใน Local Storage
+    const id = localStorage.getItem("requesterId");
+    if (!id) {
+      setRequesterName("No Context (Please Login)");
     }
-  }*/
-
-  async function handleCheck() {
-    // TODO(Issue 4): set loading, call checkSystem(), then either
-    //   - success: store categories and show Online + the list, or
-    //   - error: show Offline + a useful message.
-    setState("loading");
-    setErrorMessage("");
-
-    try {
-      // เรียกใช้ checkSystem() ที่อาจารย์เตรียมไว้ให้แทนการเขียน fetch เอง
-      const data = await checkSystem();
-      setCategories(data.categories);
-      setState("success");
-    } catch (error) {
-      setState("error");
-      setErrorMessage("Unable to connect to TokTickIT API");
-    }
-  }
+  }, []);
 
   return (
-    <div className="container py-5" style={{ maxWidth: 640 }}>
-      <h1 className="h3 mb-4">
-        TokTickIT <span className="text-success">IT Service Desk</span>
-      </h1>
-
-      <button className="btn btn-success" onClick={handleCheck} disabled={state === "loading"}>
-        {state === "loading" ? "Loading…" : "Check System"}
-      </button>
-
-      {/* TODO(Issue 4): render loading / success (Online + categories) / error (Offline) states. */}
-      {state === "success" && (
-        <div className="mt-4">
-          <p>System Status: <span className="text-success fw-bold">Online</span></p>
-
-          {/* ส่วนที่เพิ่มมาใหม่: แสดงรายการหมวดหมู่ */}
-          <ul className="list-group mt-3">
-            {categories.map((category) => (
-              <li key={category.id} className="list-group-item">
-                {category.name}
+    <div>
+      {/* Navigation Bar (อ้างอิง Labsheet ข้อ 8) */}
+      <nav className="navbar navbar-expand-lg navbar-dark shadow-sm" style={{ backgroundColor: "#006B3C" }}>
+        <div className="container">
+          <a className="navbar-brand fw-bold" href="#">TokTickIT</a>
+          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span className="navbar-toggler-icon"></span>
+          </button>
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <ul className="navbar-nav me-auto">
+              <li className="nav-item">
+                <a className="nav-link" href="#">My Tickets</a>
               </li>
-            ))}
-          </ul>
+              <li className="nav-item">
+                <a className="nav-link active" href="#">Create Ticket</a>
+              </li>
+            </ul>
+            <span className="navbar-text text-white bg-success px-3 rounded-pill">
+              👤 Profile: {requesterName}
+            </span>
+          </div>
         </div>
-      )}
-      {state === "error" && (
-        <div className="mt-4">
-          <p>System Status: <span className="text-danger fw-bold">Offline</span></p>
-          <p className="text-danger">{errorMessage}</p>
-        </div>
-      )}
-      
-      {/* เพิ่มหน้า Create Ticket ไว้ด้านล่างชั่วคราวเพื่อเทส Issue #12 */}
-      <hr className="my-5" />
-      <CreateTicket />
+      </nav>
+
+      <div className="container py-4">
+        {/* เลิกใช้ปุ่ม Check System แบบเก่า และแสดง CreateTicket เป็นหลักแทน */}
+        <CreateTicket />
+      </div>
     </div>
   );
 }
