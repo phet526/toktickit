@@ -47,7 +47,8 @@ export default function RequesterSelector({ onLogin }: Props) {
         <div className="card-body p-4 text-center">
           <h5 className="mb-3">Simulated Login</h5>
           <p className="text-muted small mb-4">
-            Select a Development Requester to simulate your session context.
+            Select a Development Requester to simulate your session context. <br/>
+            <strong>This is for testing only and is not a login screen.</strong>
           </p>
 
           {error && <div className="alert alert-danger">{error}</div>}
