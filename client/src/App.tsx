@@ -1,88 +1,65 @@
-import { useState } from "react";
-import { checkSystem, Category } from "./api.js";
-
-// UI states you must handle for Issue 4: idle, loading, success, error.
-type UiState = "idle" | "loading" | "success" | "error";
+import { useState, useEffect } from "react";
+import CreateTicket from "./pages/CreateTicket.js";
+import RequesterSelector from "./pages/RequesterSelector.js";
 
 export default function App() {
-  const [state, setState] = useState<UiState>("idle");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [requesterName, setRequesterName] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  /*async function handleCheck() {
-    // TODO(Issue 4): set loading, call checkSystem(), then either
-    //   - success: store categories and show Online + the list, or
-    //   - error: show Offline + a useful message.
-    setState("loading");
-    setErrorMessage("");
-
-    try {
-      const response = await fetch('http://localhost:3000/api/health');
-      if (!response.ok) {
-        throw new Error("Backend unavailable");
-      }
-
-      const data = await response.json();
-      if (data.status === 'ok') {
-        setState("success");
-      } else {
-        throw new Error("Invalid status from server");
-      }
-    } catch (error) {
-      setState("error");
-      setErrorMessage("Unable to connect to TokTickIT API");
+  useEffect(() => {
+    const id = localStorage.getItem("requesterId");
+    const name = localStorage.getItem("requesterName");
+    if (id && name) {
+      setRequesterName(name);
+      setIsLoggedIn(true);
     }
-  }*/
+  }, []);
 
-  async function handleCheck() {
-    // TODO(Issue 4): set loading, call checkSystem(), then either
-    //   - success: store categories and show Online + the list, or
-    //   - error: show Offline + a useful message.
-    setState("loading");
-    setErrorMessage("");
+  const handleLogin = (id: string, name: string) => {
+    localStorage.setItem("requesterId", id);
+    localStorage.setItem("requesterName", name);
+    setRequesterName(name);
+    setIsLoggedIn(true);
+  };
 
-    try {
-      // เรียกใช้ checkSystem() ที่อาจารย์เตรียมไว้ให้แทนการเขียน fetch เอง
-      const data = await checkSystem();
-      setCategories(data.categories);
-      setState("success");
-    } catch (error) {
-      setState("error");
-      setErrorMessage("Unable to connect to TokTickIT API");
-    }
+  const handleLogout = () => {
+    localStorage.removeItem("requesterId");
+    localStorage.removeItem("requesterName");
+    setIsLoggedIn(false);
+  };
+
+  if (!isLoggedIn) {
+    return <RequesterSelector onLogin={handleLogin} />;
   }
 
   return (
-    <div className="container py-5" style={{ maxWidth: 640 }}>
-      <h1 className="h3 mb-4">
-        TokTickIT <span className="text-success">IT Service Desk</span>
-      </h1>
-
-      <button className="btn btn-success" onClick={handleCheck} disabled={state === "loading"}>
-        {state === "loading" ? "Loading…" : "Check System"}
-      </button>
-
-      {/* TODO(Issue 4): render loading / success (Online + categories) / error (Offline) states. */}
-      {state === "success" && (
-        <div className="mt-4">
-          <p>System Status: <span className="text-success fw-bold">Online</span></p>
-
-          {/* ส่วนที่เพิ่มมาใหม่: แสดงรายการหมวดหมู่ */}
-          <ul className="list-group mt-3">
-            {categories.map((category) => (
-              <li key={category.id} className="list-group-item">
-                {category.name}
+    <div>
+      <nav className="navbar navbar-expand-lg navbar-dark shadow-sm" style={{ backgroundColor: "#006B3C" }}>
+        <div className="container">
+          <a className="navbar-brand fw-bold" href="#">TokTickIT</a>
+          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span className="navbar-toggler-icon"></span>
+          </button>
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <ul className="navbar-nav me-auto">
+              <li className="nav-item">
+                <a className="nav-link" href="#">My Tickets</a>
               </li>
-            ))}
-          </ul>
+              <li className="nav-item">
+                <a className="nav-link active" href="#">Create Ticket</a>
+              </li>
+            </ul>
+            <span className="navbar-text text-white bg-success px-3 rounded-pill me-2">
+              👤 Profile: {requesterName}
+            </span>
+            <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>Switch User</button>
+          </div>
         </div>
-      )}
-      {state === "error" && (
-        <div className="mt-4">
-          <p>System Status: <span className="text-danger fw-bold">Offline</span></p>
-          <p className="text-danger">{errorMessage}</p>
-        </div>
-      )}
+      </nav>
+
+      <div className="container py-4">
+        <CreateTicket />
+      </div>
     </div>
   );
 }
