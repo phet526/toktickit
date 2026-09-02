@@ -87,3 +87,53 @@ export async function uploadAttachment(ticketId: number, file: File) {
 
   return res.json();
 }
+
+export interface TicketListParams {
+  requesterId: number;
+  search?: string;
+  category?: string;
+  system?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+  sort?: string;
+}
+
+export async function getTickets(params: TicketListParams) {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") {
+      query.append(key, value.toString());
+    }
+  });
+
+  const res = await fetch(`${API_URL}/api/v1/tickets?${query.toString()}`);
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to fetch tickets");
+  }
+  return res.json();
+}
+
+export async function getTicketById(id: number, requesterId: number) {
+  const res = await fetch(`${API_URL}/api/v1/tickets/${id}?requesterId=${requesterId}`);
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to fetch ticket");
+  }
+  return res.json();
+}
+
+export async function deleteAttachment(ticketId: number, attachmentId: number, requesterId: number, reason: string) {
+  const res = await fetch(`${API_URL}/api/v1/tickets/${ticketId}/attachments/${attachmentId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ requesterId, reason })
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to delete attachment");
+  }
+  return res.json();
+}
