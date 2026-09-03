@@ -223,18 +223,6 @@ export class TicketController {
 
       const prisma = getPrisma();
       
-      const requesterId = Number(req.query.requesterId);
-      if (!requesterId || isNaN(requesterId)) {
-        res.status(403).json({ error: "requesterId is required" });
-        return;
-      }
-
-      const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
-      if (!ticket || ticket.requesterId !== requesterId) {
-        res.status(403).json({ error: "Forbidden: You do not own this ticket" });
-        return;
-      }
-
       const attachment = await prisma.attachment.findFirst({
         where: { id: attachmentId, ticketId }
       });
