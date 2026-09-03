@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { TicketService } from "../services/tickets.service.js";
 import { getPrisma } from "../prisma.js";
+import fs from "fs";
+import path from "path";
 
 export class TicketController {
   static async createTicket(req: Request, res: Response): Promise<void> {
@@ -61,7 +63,7 @@ export class TicketController {
         return;
       }
 
-      const { originalname, size, mimetype } = req.file;
+      const { originalname, size, mimetype, buffer } = req.file;
 
       // BR-05 limits validation
       const allowedMimes = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
@@ -102,6 +104,13 @@ export class TicketController {
           ticketId: ticketId
         }
       });
+
+      // Save real file to disk (Requirement 4)
+      const uploadDir = path.join(process.cwd(), 'uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir);
+      }
+      fs.writeFileSync(path.join(uploadDir, String(newAttachment.id)), buffer);
 
       res.status(201).json({ message: "Attachment uploaded successfully", attachment: newAttachment });
     } catch (error: any) {
@@ -213,6 +222,19 @@ export class TicketController {
       }
 
       const prisma = getPrisma();
+      
+      const requesterId = Number(req.query.requesterId);
+      if (!requesterId || isNaN(requesterId)) {
+        res.status(403).json({ error: "requesterId is required" });
+        return;
+      }
+
+      const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+      if (!ticket || ticket.requesterId !== requesterId) {
+        res.status(403).json({ error: "Forbidden: You do not own this ticket" });
+        return;
+      }
+
       const attachment = await prisma.attachment.findFirst({
         where: { id: attachmentId, ticketId }
       });
@@ -228,14 +250,20 @@ export class TicketController {
         return;
       }
 
-      // Mock download for Lab 2 since we only store metadata
-      const mockBuffer = Buffer.from("This is a mocked file for Lab 2. Real file storage is not implemented in this sprint.", "utf8");
+      // Read real file from disk
+      const filePath = path.join(process.cwd(), 'uploads', String(attachment.id));
+      
+      if (!fs.existsSync(filePath)) {
+        res.status(404).json({ error: "File not found on disk" });
+        return;
+      }
       
       res.setHeader("Content-Disposition", `attachment; filename="${attachment.filename}"`);
       res.setHeader("Content-Type", attachment.mimeType);
-      res.setHeader("Content-Length", mockBuffer.length);
-      res.send(mockBuffer);
-
+      res.setHeader("Content-Length", attachment.size);
+      
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
     } catch (error: any) {
       console.error("[TicketController] Error downloading attachment:", error);
       res.status(500).json({ error: "Internal Server Error" });

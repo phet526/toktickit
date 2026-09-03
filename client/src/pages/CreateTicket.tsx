@@ -112,9 +112,18 @@ export default function CreateTicket() {
         setFileError("You can only select up to 5 files.");
         e.target.value = ""; // Clear the input
         setFiles([]);
-      } else {
-        setFiles(selectedFiles);
+        return;
       }
+      
+      const oversizeFile = selectedFiles.find(file => file.size > 5 * 1024 * 1024);
+      if (oversizeFile) {
+        setFileError("File size exceeds 5MB limit");
+        e.target.value = ""; // Clear the input
+        setFiles([]);
+        return;
+      }
+
+      setFiles(selectedFiles);
     } else {
       setFiles([]);
     }
