@@ -27,6 +27,7 @@ export class TicketController {
 
       // 3. Success Response (No Wrapper - Strict compliance with api-spec)
       res.status(201).json({
+        id: ticket.id,
         ticketNo: ticket.ticketNo,
         message: "Ticket created successfully"
       });
@@ -54,12 +55,14 @@ export class TicketController {
         return;
       }
 
-      // Normally we would save metadata to DB here via TicketService
-      // Mocking DB logic directly in controller for brevity or call service:
-      // (This needs to be properly implemented in service, but we handle it here briefly)
-      
+      const requesterId = Number(req.body.requesterId || req.query.requesterId);
+      if (!requesterId || isNaN(requesterId)) {
+        res.status(403).json({ error: "requesterId is required" });
+        return;
+      }
+
       const { originalname, size, mimetype } = req.file;
-      
+
       // BR-05 limits validation
       const allowedMimes = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
       if (!allowedMimes.includes(mimetype)) {
@@ -72,9 +75,18 @@ export class TicketController {
         return;
       }
 
-      // Here you'd use prisma to insert the attachment metadata to DB
       const prisma = getPrisma();
       
+      const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+      if (!ticket) {
+        res.status(404).json({ error: "Ticket not found" });
+        return;
+      }
+      if (ticket.requesterId !== requesterId) {
+        res.status(403).json({ error: "Forbidden: You do not own this ticket" });
+        return;
+      }
+
       // Check limits (max 5)
       const count = await prisma.attachment.count({ where: { ticketId, deletedAt: null } });
       if (count >= 5) {
@@ -82,7 +94,7 @@ export class TicketController {
         return;
       }
 
-      await prisma.attachment.create({
+      const newAttachment = await prisma.attachment.create({
         data: {
           filename: originalname,
           size: size,
@@ -91,9 +103,141 @@ export class TicketController {
         }
       });
 
-      res.status(201).json({ message: "Attachment uploaded successfully" });
+      res.status(201).json({ message: "Attachment uploaded successfully", attachment: newAttachment });
     } catch (error: any) {
       console.error("[TicketController] Error uploading attachment:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+
+  static async getTickets(req: Request, res: Response): Promise<void> {
+    try {
+      const requesterId = Number(req.query.requesterId);
+      if (!requesterId || isNaN(requesterId)) {
+        res.status(400).json({ error: "requesterId is required and must be a number" });
+        return;
+      }
+
+      const params = {
+        requesterId,
+        search: req.query.search as string,
+        category: req.query.category as string,
+        system: req.query.system as string,
+        status: req.query.status as string,
+        page: req.query.page ? Number(req.query.page) : undefined,
+        limit: req.query.limit ? Number(req.query.limit) : undefined,
+        sort: req.query.sort as string,
+      };
+
+      const result = await TicketService.getTickets(params);
+      res.status(200).json(result);
+    } catch (error: any) {
+      console.error("[TicketController] Error getting tickets:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+
+  static async getTicketById(req: Request, res: Response): Promise<void> {
+    try {
+      const id = Number(req.params.id);
+      const requesterId = Number(req.query.requesterId);
+
+      if (isNaN(id)) {
+        res.status(400).json({ error: "Invalid ticket ID" });
+        return;
+      }
+      if (!requesterId || isNaN(requesterId)) {
+        res.status(400).json({ error: "requesterId is required and must be a number" });
+        return;
+      }
+
+      const ticket = await TicketService.getTicketById(id, requesterId);
+      res.status(200).json(ticket);
+    } catch (error: any) {
+      console.error("[TicketController] Error getting ticket by id:", error);
+      if (error.message === "NOT_FOUND") {
+        res.status(404).json({ error: "Ticket not found" });
+      } else if (error.message === "FORBIDDEN") {
+        res.status(403).json({ error: "Forbidden: You do not have permission to view this ticket" });
+      } else {
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    }
+  }
+
+  static async deleteAttachment(req: Request, res: Response): Promise<void> {
+    try {
+      const ticketId = Number(req.params.id);
+      const attachmentId = Number(req.params.attachmentId);
+      const { requesterId, reason } = req.body;
+
+      if (isNaN(ticketId) || isNaN(attachmentId)) {
+        res.status(400).json({ error: "Invalid ticket or attachment ID" });
+        return;
+      }
+
+      if (!requesterId || isNaN(Number(requesterId))) {
+        res.status(403).json({ error: "requesterId is required" }); // 403 as per "ไม่มีสิทธิ์ลบไฟล์ หรือไม่ได้ส่งเหตุผลการลบ"
+        return;
+      }
+
+      if (!reason || String(reason).trim() === '') {
+        res.status(403).json({ error: "reason is required" });
+        return;
+      }
+
+      const result = await TicketService.deleteAttachment(ticketId, attachmentId, Number(requesterId), String(reason));
+      res.status(200).json(result);
+    } catch (error: any) {
+      console.error("[TicketController] Error deleting attachment:", error);
+      if (error.message === "NOT_FOUND") {
+        res.status(404).json({ error: "Ticket or attachment not found" });
+      } else if (error.message === "FORBIDDEN") {
+        res.status(403).json({ error: "Forbidden: You do not have permission" });
+      } else if (error.message === "Reason is required") {
+        res.status(403).json({ error: "reason is required" });
+      } else {
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    }
+  }
+
+  static async downloadAttachment(req: Request, res: Response): Promise<void> {
+    try {
+      const ticketId = Number(req.params.id);
+      const attachmentId = Number(req.params.attachmentId);
+
+      if (isNaN(ticketId) || isNaN(attachmentId)) {
+        res.status(400).json({ error: "Invalid ticket or attachment ID" });
+        return;
+      }
+
+      const prisma = getPrisma();
+      const attachment = await prisma.attachment.findFirst({
+        where: { id: attachmentId, ticketId }
+      });
+
+      if (!attachment) {
+        res.status(404).json({ error: "Attachment not found" });
+        return;
+      }
+
+      if (attachment.deletedAt) {
+        // As per API spec: 403/404 if soft-removed
+        res.status(403).json({ error: "Forbidden: Attachment has been deleted" });
+        return;
+      }
+
+      // Mock download for Lab 2 since we only store metadata
+      const mockBuffer = Buffer.from("This is a mocked file for Lab 2. Real file storage is not implemented in this sprint.", "utf8");
+      
+      res.setHeader("Content-Disposition", `attachment; filename="${attachment.filename}"`);
+      res.setHeader("Content-Type", attachment.mimeType);
+      res.setHeader("Content-Length", mockBuffer.length);
+      res.send(mockBuffer);
+
+    } catch (error: any) {
+      console.error("[TicketController] Error downloading attachment:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   }

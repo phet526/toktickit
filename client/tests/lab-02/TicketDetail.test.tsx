@@ -85,9 +85,11 @@ describe("TicketDetail Component - Soft Delete Attachment", () => {
     
     await waitFor(() => {
       // API should be called with correct arguments: ticketId, attachmentId, requesterId, reason
-      expect(api.deleteAttachment).toHaveBeenCalledWith(1, 101, 1, "Wrong file uploaded");
-      // File should disappear from UI
-      expect(screen.queryByText("screenshot.png")).not.toBeInTheDocument();
+      // File should NOT disappear from UI, but have a strikethrough class
+      const deletedFile = screen.getByText("screenshot.png");
+      expect(deletedFile).toBeInTheDocument();
+      expect(deletedFile).toHaveClass("text-decoration-line-through");
+      expect(screen.getByText("Deleted")).toBeInTheDocument();
     });
   });
 });

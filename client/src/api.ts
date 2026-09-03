@@ -71,11 +71,11 @@ export async function createTicket(payload: CreateTicketPayload) {
   return res.json();
 }
 
-export async function uploadAttachment(ticketId: number, file: File) {
+export async function uploadAttachment(ticketId: number, file: File, requesterId: number) {
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch(`${API_URL}/api/v1/tickets/${ticketId}/attachments`, {
+  const res = await fetch(`${API_URL}/api/v1/tickets/${ticketId}/attachments?requesterId=${requesterId}`, {
     method: "POST",
     body: formData
   });
