@@ -10,7 +10,7 @@
 | https://github.com/phet526/toktickit/pull/14| feature/lab2-context | Approved |
 | https://github.com/phet526/toktickit/pull/17 | feature/ticket-creation | Approved |
 | https://github.com/phet526/toktickit/pull/18 | feature/15-my-tickets | Approved |
-| [ให้เอามาแปะเอง] | feature/16-e2e-testing | Approved |
+| https://github.com/phet526/toktickit/pull/19 | feature/16-e2e-testing | Approved |
 
 Reviewer comment I received: []
 How I responded: []
