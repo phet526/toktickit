@@ -12,10 +12,4 @@
 | https://github.com/phet526/toktickit/pull/18 | feature/15-my-tickets | Approved |
 | https://github.com/phet526/toktickit/pull/19 | feature/16-e2e-testing | Approved |
 
-Reviewer comment I received: []
-How I responded: []
 
-
-## Pull Requests I reviewed for my partner
-My comment: []
-Partner's response: []
