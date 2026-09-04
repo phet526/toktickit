@@ -1,0 +1,31 @@
+/* Zen Green Theme Global Styles */
+
+body {
+  background-color: #F5F7F6;
+  color: #2A3B32; /* Dark charcoal-green for text */
+}
+
+/* Secondary Green for links and hovers */
+a {
+  color: #0B7A46;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #006B3C;
+  text-decoration: underline;
+}
+
+/* Form inputs: read-only shaded soft green-gray */
+input[readonly], textarea[readonly] {
+  background-color: #EAF6EF !important;
+}
+
+/* Error messages dark red text */
+.text-danger {
+  color: #B30000 !important;
+}
+
+.border-danger {
+  border-color: #B30000 !important;
+}

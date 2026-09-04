@@ -60,9 +60,11 @@ export default function RequesterSelector({ onLogin }: Props) {
           ) : (
             <>
               <select 
+                id="requesterId"
                 className="form-select form-select-lg mb-4" 
                 value={selectedId} 
                 onChange={(e) => setSelectedId(e.target.value)}
+                aria-label="Select a Requester"
               >
                 <option value="">-- Select Requester --</option>
                 {requesters.map(r => (
