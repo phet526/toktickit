@@ -57,4 +57,120 @@ export class TicketService {
 
     return newTicket;
   }
+
+  static async getTickets(params: {
+    requesterId: number;
+    search?: string;
+    category?: string;
+    system?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+    sort?: string;
+  }) {
+    const prisma = getPrisma();
+    const page = params.page && params.page > 0 ? params.page : 1;
+    const limit = params.limit && params.limit > 0 ? params.limit : 10;
+    const skip = (page - 1) * limit;
+
+    const where: any = { requesterId: params.requesterId };
+
+    if (params.search) {
+      where.OR = [
+        { ticketNo: { contains: params.search, mode: 'insensitive' } },
+        { summary: { contains: params.search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (params.category) {
+      // Assuming category is ID, if name, need to join
+      where.categoryId = parseInt(params.category);
+    }
+
+    if (params.system) {
+      where.relatedSystemId = parseInt(params.system);
+    }
+
+    if (params.status) {
+      where.currentStatus = params.status;
+    }
+
+    let orderBy: any = { createdAt: 'desc' };
+    if (params.sort) {
+      const [field, order] = params.sort.split(':');
+      if (field && (order === 'asc' || order === 'desc')) {
+        orderBy = { [field]: order };
+      }
+    }
+
+    const [data, totalItems] = await Promise.all([
+      prisma.ticket.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy,
+        include: {
+          category: { select: { name: true } },
+          relatedSystem: { select: { name: true } },
+        }
+      }),
+      prisma.ticket.count({ where })
+    ]);
+
+    return {
+      data,
+      meta: {
+        totalItems,
+        currentPage: page,
+        totalPages: Math.ceil(totalItems / limit)
+      }
+    };
+  }
+
+  static async getTicketById(id: number, requesterId: number) {
+    const prisma = getPrisma();
+    const ticket = await prisma.ticket.findUnique({
+      where: { id },
+      include: {
+        category: { select: { name: true } },
+        relatedSystem: { select: { name: true } },
+        attachments: true
+      }
+    });
+
+    if (!ticket) throw new Error("NOT_FOUND");
+    if (ticket.requesterId !== requesterId) throw new Error("FORBIDDEN");
+
+    return ticket;
+  }
+
+  static async deleteAttachment(ticketId: number, attachmentId: number, requesterId: number, reason: string) {
+    const prisma = getPrisma();
+    
+    if (!reason || reason.trim() === '') {
+      throw new Error("Reason is required");
+    }
+
+    // Verify ticket ownership
+    const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+    if (!ticket) throw new Error("NOT_FOUND");
+    if (ticket.requesterId !== requesterId) throw new Error("FORBIDDEN");
+
+    // Verify attachment exists and belongs to ticket
+    const attachment = await prisma.attachment.findFirst({
+      where: { id: attachmentId, ticketId, deletedAt: null }
+    });
+    if (!attachment) throw new Error("NOT_FOUND");
+
+    // Soft delete
+    await prisma.attachment.update({
+      where: { id: attachmentId },
+      data: {
+        deletedAt: new Date(),
+        deletedReason: reason
+      }
+    });
+
+    return { success: true };
+  }
 }

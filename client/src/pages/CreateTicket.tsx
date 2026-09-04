@@ -72,6 +72,7 @@ export default function CreateTicket() {
 
     setIsSubmitting(true);
     let createdTicketNo = "";
+    let createdTicketId = 0;
 
     try {
       const res = await createTicket({
@@ -83,6 +84,7 @@ export default function CreateTicket() {
         requestedPriority
       });
       createdTicketNo = res.ticketNo;
+      createdTicketId = res.id;
     } catch (err: any) {
       setErrors({ general: err.message || "Failed to create ticket." });
       setIsSubmitting(false);
@@ -91,8 +93,7 @@ export default function CreateTicket() {
 
     if (files.length > 0) {
       try {
-        const numericId = parseInt(createdTicketNo.split("-")[2], 10);
-        const uploadPromises = files.map(f => uploadAttachment(numericId, f));
+        const uploadPromises = files.map(f => uploadAttachment(createdTicketId, f, requesterId));
         await Promise.all(uploadPromises);
       } catch (err: any) {
         setAttachmentError("Ticket was created successfully, but file upload failed: " + (err.message || "Unknown error"));
@@ -111,9 +112,18 @@ export default function CreateTicket() {
         setFileError("You can only select up to 5 files.");
         e.target.value = ""; // Clear the input
         setFiles([]);
-      } else {
-        setFiles(selectedFiles);
+        return;
       }
+      
+      const oversizeFile = selectedFiles.find(file => file.size > 5 * 1024 * 1024);
+      if (oversizeFile) {
+        setFileError("File size exceeds 5MB limit");
+        e.target.value = ""; // Clear the input
+        setFiles([]);
+        return;
+      }
+
+      setFiles(selectedFiles);
     } else {
       setFiles([]);
     }

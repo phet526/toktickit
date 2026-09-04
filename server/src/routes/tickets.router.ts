@@ -25,10 +25,22 @@ const handleUpload = (req: Request, res: Response, next: NextFunction) => {
   });
 };
 
+// GET /api/v1/tickets
+router.get("/", TicketController.getTickets);
+
+// GET /api/v1/tickets/:id
+router.get("/:id", TicketController.getTicketById);
+
 // POST /api/v1/tickets
 router.post("/", TicketController.createTicket);
 
 // POST /api/v1/tickets/:id/attachments
 router.post("/:id/attachments", handleUpload, TicketController.uploadAttachment);
+
+// DELETE /api/v1/tickets/:id/attachments/:attachmentId
+router.delete("/:id/attachments/:attachmentId", TicketController.deleteAttachment);
+
+// GET /api/v1/tickets/:id/attachments/:attachmentId/download
+router.get("/:id/attachments/:attachmentId/download", TicketController.downloadAttachment);
 
 export default router;
