@@ -183,10 +183,12 @@ export default function TicketDetail() {
             <label className="btn btn-sm btn-outline-primary" style={{ borderColor: "#006B3C", color: "#006B3C" }}>
               <i className="bi bi-upload me-1"></i> Add Attachment
               <input 
+                id="fileUpload"
                 type="file" 
                 className="d-none" 
                 onChange={handleUploadAttachment}
                 accept=".jpg,.jpeg,.png,.webp,.pdf"
+                aria-label="Upload Attachment"
               />
             </label>
             <div className="form-text small">Max 5MB (JPG, PNG, WEBP, PDF)</div>

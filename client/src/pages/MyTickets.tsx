@@ -77,6 +77,7 @@ export default function MyTickets() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{ flex: 2 }}
+              aria-label="Search Tickets"
             />
             <button type="submit" className="btn btn-success px-4" style={{ backgroundColor: "#006B3C" }}>
               <i className="bi bi-search"></i> Search
@@ -87,7 +88,7 @@ export default function MyTickets() {
           </div>
           
           <div className="col-md-12 d-flex gap-2">
-            <select className="form-select" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
+            <select className="form-select" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} aria-label="Filter by Status">
               <option value="">All Statuses</option>
               <option value="New">New</option>
               <option value="In Progress">In Progress</option>
@@ -95,17 +96,17 @@ export default function MyTickets() {
               <option value="Closed">Closed</option>
             </select>
 
-            <select className="form-select" value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }}>
+            <select className="form-select" value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }} aria-label="Filter by Category">
               <option value="">All Categories</option>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
 
-            <select className="form-select" value={system} onChange={(e) => { setSystem(e.target.value); setPage(1); }}>
+            <select className="form-select" value={system} onChange={(e) => { setSystem(e.target.value); setPage(1); }} aria-label="Filter by System">
               <option value="">All Systems</option>
               {systems.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
 
-            <select className="form-select" value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }}>
+            <select className="form-select" value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }} aria-label="Sort Order">
               <option value="createdAt:desc">Newest First</option>
               <option value="createdAt:asc">Oldest First</option>
             </select>
