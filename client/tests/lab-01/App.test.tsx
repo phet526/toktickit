@@ -1,81 +1,51 @@
-/*import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import App from "../../src/App.js";
+import App from "../../src/App";
 
-describe("App", () => {
-  // WORKED EXAMPLE — provided for you.
-  it("renders the TokTickIT heading", () => {
-    render(<App />);
-    expect(screen.getByText(/TokTickIT/i)).toBeInTheDocument();
+// Mock the child components so we don't have to worry about their internal API calls or UI
+vi.mock("../../src/pages/CreateTicket", () => ({
+  default: () => <div data-testid="mock-create-ticket">Create Ticket Form</div>
+}));
+
+vi.mock("../../src/pages/MyTickets", () => ({
+  default: () => <div data-testid="mock-my-tickets">My Tickets</div>
+}));
+
+vi.mock("../../src/pages/RequesterSelector", () => ({
+  default: () => <div data-testid="mock-requester-selector">Requester Selector</div>
+}));
+
+describe("App Component", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
   });
 
-  // Issue 4 — write these yourself. Hint: mock the api module with
-  // vi.spyOn(api, "checkSystem").mockResolvedValue(...) / .mockRejectedValue(...)
-  // then click the button and assert the Online list / Offline message.
-  it.todo("shows Online and the seeded categories on success");
-  it.todo("shows an Offline error message when the API is unavailable");
-});*/
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import App from "../../src/App.js";
-import * as api from "../../src/api.js"; // นำเข้า api มาเพื่อจำลองการทำงาน
-
-describe("App", () => {
-  // WORKED EXAMPLE — provided for you.
-  it("renders the TokTickIT heading", () => {
+  it("renders the RequesterSelector when not logged in (no requesterId in localStorage)", () => {
     render(<App />);
-    expect(screen.getByText(/TokTickIT/i)).toBeInTheDocument();
+    // The App should show the Mock Login (RequesterSelector)
+    expect(screen.getByTestId("mock-requester-selector")).toBeInTheDocument();
+    
+    // The Navbar and internal pages should NOT be visible
+    expect(screen.queryByText(/TokTickIT/i)).not.toBeInTheDocument();
+    expect(screen.queryByTestId("mock-my-tickets")).not.toBeInTheDocument();
   });
 
-  // Issue 4 — shows Online and the seeded categories on success
-  it("shows Online and the seeded categories on success", async () => {
-    // 1. จำลองข้อมูล (Mock) ว่า API ส่งกลับมาสำเร็จ
-    const mockData = {
-      status: "ok",
-      categories: [
-        { id: 1, name: "Account and Access" },
-        { id: 2, name: "Hardware" }
-      ]
-    };
-    const spy = vi.spyOn(api, "checkSystem").mockResolvedValue(mockData as any);
-
+  it("renders the Navbar and defaults to MyTickets when logged in", () => {
+    // Set localStorage to simulate a logged-in user
+    localStorage.setItem("requesterId", "1");
+    localStorage.setItem("requesterName", "John Doe");
+    
     render(<App />);
-
-    // 2. จำลองการกดปุ่ม Check System
-    const button = screen.getByRole("button", { name: /Check System/i });
-    fireEvent.click(button);
-
-    // 3. รอและตรวจสอบผลลัพธ์ว่าหน้าเว็บขึ้นคำว่า Online และโชว์ข้อมูลหมวดหมู่
-    await waitFor(() => {
-      expect(screen.getByText(/Online/i)).toBeInTheDocument();
-    });
-
-    expect(screen.getByText("Account and Access")).toBeInTheDocument();
-    expect(screen.getByText("Hardware")).toBeInTheDocument();
-
-    // 4. ล้างค่าการจำลอง (คืนค่าเดิมให้ระบบ)
-    spy.mockRestore();
-  });
-
-  // Issue 4 — shows an Offline error message when the API is unavailable
-  it("shows an Offline error message when the API is unavailable", async () => {
-    // 1. จำลองข้อมูล (Mock) ว่าเซิร์ฟเวอร์ล่ม (ดึงข้อมูลไม่สำเร็จ)
-    const spy = vi.spyOn(api, "checkSystem").mockRejectedValue(new Error("Backend unavailable"));
-
-    render(<App />);
-
-    // 2. จำลองการกดปุ่ม Check System
-    const button = screen.getByRole("button", { name: /Check System/i });
-    fireEvent.click(button);
-
-    // 3. รอและตรวจสอบผลลัพธ์ว่าหน้าเว็บขึ้นคำว่า Offline และโชว์ข้อความ Error
-    await waitFor(() => {
-      expect(screen.getByText(/Offline/i)).toBeInTheDocument();
-    });
-
-    expect(screen.getByText(/Unable to connect to TokTickIT API/i)).toBeInTheDocument();
-
-    // 4. ล้างค่าการจำลอง
-    spy.mockRestore();
+    
+    // The Navbar should be visible with the user's name
+    expect(screen.getByText("TokTickIT")).toBeInTheDocument();
+    expect(screen.getByText(/Profile: John Doe/i)).toBeInTheDocument();
+    
+    // The MyTickets view should be visible by default (due to index route)
+    expect(screen.getByTestId("mock-my-tickets")).toBeInTheDocument();
+    
+    // The Mock Login should NOT be visible
+    expect(screen.queryByTestId("mock-requester-selector")).not.toBeInTheDocument();
   });
 });

@@ -1,0 +1,27 @@
+{
+  "name": "toktickit",
+  "version": "1.0.0",
+  "description": "1. การตั้งค่า Environment Variables (.env)\r โปรเจกต์นี้จำเป็นต้องใช้ไฟล์ .env ในการรัน",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phet526/toktickit.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/phet526/toktickit/issues"
+  },
+  "homepage": "https://github.com/phet526/toktickit#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}
