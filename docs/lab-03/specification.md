@@ -376,10 +376,10 @@ model InternalNote {
 - `PATCH /api/v1/staff/tickets/:id/status`: ปรับปรุงสถานะตั๋วตาม State Transition Matrix
 
 ### Comments & Notes Endpoints
-- `GET /api/v1/tickets/:id/comments`: ดึงรายการ Public Comments (อนุญาต: Requester เจ้าของตั๋ว, IT Staff)
-- `POST /api/v1/tickets/:id/comments`: สร้าง Public Comment ใหม่
-- `GET /api/v1/staff/tickets/:id/notes`: ดึงรายการ Internal Notes (อนุญาต: IT Staff เท่านั้น - Requester และ Admin ห้ามเข้าถึง)
-- `POST /api/v1/staff/tickets/:id/notes`: สร้าง Internal Note ใหม่
+- `GET /api/v1/tickets/:id/comments`: ดึงรายการ Public Comments (อนุญาต: Requester เจ้าของตั๋ว, IT Staff, Administrator)
+- `POST /api/v1/tickets/:id/comments`: สร้าง Public Comment ใหม่ (อนุญาต: Requester เจ้าของตั๋ว, IT Staff)
+- `GET /api/v1/staff/tickets/:id/notes`: ดึงรายการ Internal Notes (อนุญาต: IT Staff, Administrator - Requester ห้ามเข้าถึง)
+- `POST /api/v1/staff/tickets/:id/notes`: สร้าง Internal Note ใหม่ (อนุญาต: IT Staff เท่านั้น)
 
 ### Administrator User Management Endpoints
 - `GET /api/v1/admin/users`: ดึงรายชื่อผู้ใช้ทั้งหมด (Query: search, role)
