@@ -10,6 +10,7 @@
 - **HTTP-only Cookie Session:** ระบบใช้การยืนยันตัวตนผ่าน Signed HTTP-only Cookie ในชื่อ `toktick_session` ซึ่งบรรจุ Token (JWT) ที่เข้ารหัสจากฝั่งเซิร์ฟเวอร์
 - **Security Attributes:** คุกกี้ถูกกำหนดค่า `HttpOnly = true` (ป้องกันการเข้าถึงจาก JavaScript/XSS), `SameSite = 'Lax'` (ป้องกัน CSRF), และ `Path = '/'`
 - **Current User Binding:** ตัวตนของผู้ใช้งาน (User Identity & Role) จะถูกถอดรหัสจากคุกกี้บนเซิร์ฟเวอร์โดยตรง ไคลเอนต์ไม่ต้องและไม่สามารถส่ง `requesterId` หรือ `userId` มาใน Request Body เพื่อปลอมแปลงสิทธิ์ได้อีกต่อไป
+- **Authentication Secrets Protection:** ข้อมูลความลับทั้งหมดของระบบยืนยันตัวตน (Authentication secrets เช่น JWT Secret, Session Signing Key, Password Salt/Pepper) จะต้องถูกจัดเก็บและโหลดผ่าน Environment Variables บนฝั่งเซิร์ฟเวอร์เท่านั้น ห้ามเปิดเผยให้ฝั่ง Client ทราบ และห้าม commit เข้าสู่ Source Control (Git) เด็ดขาด
 
 ### 1.3 Expected HTTP Status Codes
 - `200 OK`: ดึงข้อมูลหรืออัปเดตข้อมูลสำเร็จ
@@ -190,9 +191,63 @@
   - `403 Forbidden`: ไม่ใช่เจ้าของตั๋ว
 
 ### 3.5 Attachments Management (Lab 2 Continuous)
-- `POST /api/v1/tickets/:id/attachments`: อัปโหลดไฟล์แนบ (เฉพาะเจ้าของตั๋ว, สูงสุด 5 MB, JPG/PNG/WEBP/PDF)
-- `GET /api/v1/tickets/:id/attachments/:attachmentId/download`: สตรีมดาวน์โหลดไฟล์แนบ
-- `DELETE /api/v1/tickets/:id/attachments/:attachmentId`: ลบไฟล์แบบ Soft-removal (รับ `reason` ใน Request Body)
+
+#### 3.5.1 Upload Attachment
+- **Method & Path:** `POST /api/v1/tickets/:id/attachments`
+- **Access:** Authenticated Requester (เฉพาะเจ้าของตั๋วเท่านั้น)
+- **Content-Type:** `multipart/form-data`
+- **Form Data:**
+  - `file`: ไฟล์แนบ (รองรับนามสกุล JPG, PNG, WEBP, PDF ขนาดสูงสุดไม่เกิน 5 MB)
+- **Responses:**
+  - `201 Created`: อัปโหลดและบันทึกไฟล์แนบสำเร็จ
+    ```json
+    {
+      "message": "Attachment uploaded successfully",
+      "attachment": {
+        "id": 1,
+        "filename": "screenshot-issue.png",
+        "size": 1048576,
+        "mimeType": "image/png",
+        "createdAt": "2026-09-10T12:00:00.000Z"
+      }
+    }
+    ```
+  - `400 Bad Request`: ไม่มีไฟล์แนบส่งมา, ขนาดเกิน 5 MB, หรือประเภทไฟล์ไม่รองรับ (`"Invalid file type or size exceeds 5MB limit."`)
+  - `401 Unauthorized`: ไม่ได้เข้าสู่ระบบ
+  - `403 Forbidden`: ผู้ใช้ไม่ใช่เจ้าของตั๋วใบนี้ (`"You do not have permission to attach files to this ticket."`)
+  - `404 Not Found`: ไม่พบเลขตั๋วที่ระบุในระบบ
+
+#### 3.5.2 Download Attachment
+- **Method & Path:** `GET /api/v1/tickets/:id/attachments/:attachmentId/download`
+- **Access:** Authenticated Users (Requester เจ้าของตั๋ว, IT Staff, Administrator)
+- **Responses:**
+  - `200 OK`: สตรีมข้อมูลไบนารีของไฟล์ (Binary stream) พร้อม Header:
+    - `Content-Disposition: attachment; filename="<filename>"`
+    - `Content-Type: <mimeType>`
+  - `401 Unauthorized`: ไม่ได้เข้าสู่ระบบ
+  - `403 Forbidden`: Requester ที่ไม่ใช่เจ้าของตั๋วพยายามดาวน์โหลดไฟล์
+  - `404 Not Found`: ไม่พบตั๋ว หรือไฟล์แนบถูกลบไปแล้ว (Soft-deleted)
+
+#### 3.5.3 Remove Attachment (Soft Deletion)
+- **Method & Path:** `DELETE /api/v1/tickets/:id/attachments/:attachmentId`
+- **Access:** Authenticated Requester (เฉพาะเจ้าของตั๋วเท่านั้น)
+- **Request Body:**
+  ```json
+  {
+    "reason": "Uploaded incorrect configuration screenshot"
+  }
+  ```
+- **Responses:**
+  - `200 OK`: ซ่อน/ลบไฟล์แบบ Soft-removal สำเร็จ (บันทึก `deletedAt` และ `deletedReason`)
+    ```json
+    {
+      "message": "Attachment removed successfully"
+    }
+    ```
+  - `400 Bad Request`: ไม่ได้ระบุเหตุผลการลบ (`reason` ว่างเปล่า)
+  - `401 Unauthorized`: ไม่ได้เข้าสู่ระบบ
+  - `403 Forbidden`: ผู้ใช้ไม่ใช่เจ้าของตั๋วใบนี้
+  - `404 Not Found`: ไม่พบไฟล์แนบ หรือไฟล์แนบถูกลบไปก่อนหน้านี้แล้ว
 
 ---
 
@@ -296,7 +351,7 @@
 
 ### 5.1 Public Comments
 - **Retrieve Comments:** `GET /api/v1/tickets/:id/comments`
-  - **Access:** Requester (เฉพาะตั๋วตนเอง), IT Staff
+  - **Access:** Requester (เฉพาะตั๋วตนเอง), IT Staff, Administrator
   - **Response (200 OK):**
     ```json
     [
@@ -309,7 +364,7 @@
     ]
     ```
 - **Create Comment:** `POST /api/v1/tickets/:id/comments`
-  - **Access:** Requester (เฉพาะตั๋วตนเอง), IT Staff
+  - **Access:** Requester (เฉพาะตั๋วตนเอง), IT Staff (**Administrator ตอบกลับ 403 Forbidden**)
   - **Request Body:**
     ```json
     { "content": "We are looking into this issue right now." }
@@ -317,10 +372,11 @@
   - **Responses:**
     - `201 Created`: บันทึกข้อความสำเร็จ (Append-only)
     - `400 Bad Request`: ข้อความว่างเปล่า หรือยาวเกิน 1,000 ตัวอักษร
+    - `403 Forbidden`: ไม่มีสิทธิ์โพสต์ความคิดเห็น
 
 ### 5.2 Internal Notes (Confidential)
 - **Retrieve Notes:** `GET /api/v1/staff/tickets/:id/notes`
-  - **Access:** IT Staff Only (**Requester และ Administrator ตอบกลับ 403 Forbidden**)
+  - **Access:** IT Staff, Administrator (**Requester ตอบกลับ 403 Forbidden**)
   - **Response (200 OK):**
     ```json
     [
@@ -333,12 +389,15 @@
     ]
     ```
 - **Create Note:** `POST /api/v1/staff/tickets/:id/notes`
-  - **Access:** IT Staff Only
+  - **Access:** IT Staff Only (**Requester และ Administrator ตอบกลับ 403 Forbidden**)
   - **Request Body:**
     ```json
     { "content": "Coordinating with ISP network engineer." }
     ```
-  - **Responses:** `201 Created`, `400 Bad Request` (ข้อความว่างหรือยาวเกิน 1,000 ตัวอักษร)
+  - **Responses:**
+    - `201 Created`: บันทึกข้อความภายในลงระบบสำเร็จ
+    - `400 Bad Request`: ข้อความว่างหรือยาวเกิน 1,000 ตัวอักษร
+    - `403 Forbidden`: ผู้ใช้ไม่ใช่ IT Staff
 
 ---
 

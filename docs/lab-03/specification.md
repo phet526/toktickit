@@ -113,11 +113,11 @@ Stakeholder ต้องการนำระบบเข้าสู่สภ�
 - **BR-06 (Requester Identity Binding):** ตัวตนของ Requester จะต้องถูกดึงมาจาก Session/Token ที่ได้รับการรับรองจาก Backend เท่านั้น ห้ามรับ `requesterId` จาก Client Request body เพื่อป้องกันการปลอมแปลงสิทธิ์
 - **BR-07 (Requester Data Isolation):** Requester สามารถดู ค้นหา และเข้าถึงตั๋วและไฟล์แนบได้เฉพาะตั๋วที่ตนเองเป็นผู้สร้าง (`requesterId = currentUser.id`) เท่านั้น การพยายามเข้าถึงตั๋วของผู้อื่นจะต้องได้ผลลัพธ์เป็น HTTP 403 Forbidden หรือ 404 Not Found
 - **BR-08 (Role Single Responsibility):** ผู้ใช้งาน 1 คนจะมีบทบาทได้เพียง 1 บทบาทเท่านั้นจาก 3 บทบาท: `REQUESTER`, `IT_STAFF`, หรือ `ADMINISTRATOR`
-- **BR-09 (Admin Strict Role Separation):** Administrator มีหน้าที่จัดการบัญชีผู้ใช้เท่านั้น (User Management) ไม่มีสิทธิ์เข้าถึง Ticket Queue, เคลมตั๋ว, ปรับ IT Priority, เปลี่ยนสถานะตั๋ว หรือเขียน Internal Notes เพื่อรักษาการแยกหน้าที่อย่างเคร่งครัดตามข้อกำหนด
+- **BR-09 (Admin Strict Role Separation):** Administrator มีหน้าที่หลักในการจัดการบัญชีผู้ใช้ (User Management) ไม่มีสิทธิ์เข้าถึง Ticket Queue ส่วนกลาง, เคลมตั๋ว, ปรับ IT Priority, เปลี่ยนสถานะตั๋ว หรือสร้าง/เขียน Comments และ Notes แต่สามารถเข้าถึงเพื่ออ่าน (View-only) Public Comments และ Internal Notes บนตั๋วได้ตามกฎ BR-04 ของโจทย์ Lab 3
 
 ### Comments & Notes Rules
-- **BR-10 (Public Comments Visibility & Append-Only):** Public Comments สามารถอ่านและเขียนได้โดย Requester เจ้าของตั๋ว และ IT Staff ข้อมูลเป็นแบบ Append-only (ห้ามแก้ไขหรือลบ)
-- **BR-11 (Internal Notes Visibility & Append-Only):** Internal Notes เป็นข้อมูลความลับเชิงปฏิบัติการ อ่านและเขียนได้เฉพาะ IT Staff เท่านั้น ข้อมูลเป็นแบบ Append-only และ Requester ต้องไม่สามารถอ่านหรือรับรู้การมีอยู่ของ Internal Notes ได้ (คืนค่า 403 Forbidden)
+- **BR-10 (Public Comments Visibility & Append-Only):** Public Comments สามารถอ่าน (View) ได้โดย Requester เจ้าของตั๋ว, IT Staff, และ Administrator ส่วนการสร้าง/เขียน (Create) สามารถทำได้โดย Requester เจ้าของตั๋ว และ IT Staff เท่านั้น ข้อมูลเป็นแบบ Append-only (ห้ามแก้ไขหรือลบ)
+- **BR-11 (Internal Notes Visibility & Append-Only):** Internal Notes เป็นข้อมูลความลับเชิงปฏิบัติการ สามารถอ่าน (View) ได้เฉพาะ IT Staff และ Administrator เท่านั้น ส่วนการสร้าง/เขียน (Create) สามารถทำได้เฉพาะ IT Staff ข้อมูลเป็นแบบ Append-only และ Requester ต้องไม่สามารถอ่านหรือรับรู้การมีอยู่ของ Internal Notes ได้ (คืนค่า 403 Forbidden)
 - **BR-12 (Content Validation):** ข้อความใน Comments และ Notes ต้องไม่เป็นค่าว่างหรือมีเพียงช่องว่าง (Whitespace-only) และต้องมีความยาวไม่เกิน 1,000 ตัวอักษร โดยบันทึก Author และ Timestamp อัตโนมัติจากฝั่ง Backend
 
 ### Ticket Ownership, Priority, and Status Rules
@@ -165,9 +165,9 @@ Stakeholder ต้องการนำระบบเข้าสู่สภ�
 | **Requester: View Ticket Detail** | ✅ (Own only) | ❌ (403/404) | ❌ (ใช้ IT Detail) | ❌ | ❌ (401) |
 | **Requester: Upload/Delete Attachment** | ✅ (Own ticket) | ❌ (Forbidden) | ❌ | ❌ | ❌ (401) |
 | **Requester: Indicate Problem Resolved** | ✅ (Own ticket) | ❌ (Forbidden) | ❌ | ❌ | ❌ (401) |
-| **Public Comments: View** | ✅ (Own ticket) | ❌ (Forbidden) | ✅ (All tickets) | ❌ | ❌ (401) |
-| **Public Comments: Create** | ✅ (Own ticket) | ❌ (Forbidden) | ✅ (All tickets) | ❌ | ❌ (401) |
-| **Internal Notes: View** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ (All tickets) | ❌ (403 Forbidden) | ❌ (401) |
+| **Public Comments: View** | ✅ (Own ticket) | ❌ (Forbidden) | ✅ (All tickets) | ✅ (All tickets) | ❌ (401) |
+| **Public Comments: Create** | ✅ (Own ticket) | ❌ (Forbidden) | ✅ (All tickets) | ❌ (403 Forbidden) | ❌ (401) |
+| **Internal Notes: View** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ (All tickets) | ✅ (All tickets) | ❌ (401) |
 | **Internal Notes: Create** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ (All tickets) | ❌ (403 Forbidden) | ❌ (401) |
 | **IT Queue: View / Search / Filter** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ | ❌ (403 Forbidden) | ❌ (401) |
 | **IT Ticket: View Detail** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ | ❌ (403 Forbidden) | ❌ (401) |

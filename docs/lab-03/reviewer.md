@@ -5,8 +5,8 @@
 
 ## Pull Requests I authored (reviewed by my partner)
 | PR | Branch | Reviewer verdict |
-|----|--------|------------------|
-| <!-- Link to Issue 1 PR --> | feature/sprint3-contract | Pending Review |
+|:---|:-------|:-----------------|
+| [#29](https://github.com/phet526/toktickit/pull/29) | feature/sprint3-contract | Pending Review |
 
 ## Pull Requests I reviewed (authored by my partner)
 | PR | Branch | Reviewer verdict |

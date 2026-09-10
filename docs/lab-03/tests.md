@@ -25,6 +25,7 @@
 | **API-06** | API | FR-04, BR-05 | ผู้ใช้สั่ง Logout | HTTP 200; เคลียร์คุกกี้เซสชัน และไม่สามารถเรียก Endpoint ที่ต้องยืนยันตัวตนได้อีก (401) | `server/tests/lab-03/auth.api.test.ts` | Pass |
 | **API-07** | API | AC-03, BR-07 | Requester พยายามดูหรือจัดการตั๋วที่ไม่ใช่ของตนเอง | HTTP 403 หรือ 404; ไม่เปิดเผยข้อมูลตั๋วของผู้อื่น | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | **API-08** | API | AC-04, BR-11 | Requester พยายามเรียกดูหรือสร้าง Internal Notes | HTTP 403 Forbidden; ไม่เปิดเผยข้อมูลโน้ตลับภายใน | `server/tests/lab-03/authorization.api.test.ts` | Pass |
+| **API-08b** | API | AC-04, BR-04, BR-11 | Administrator เรียกดู Internal Notes บนตั๋ว | HTTP 200; Administrator สามารถเข้าถึงเพื่ออ่าน Internal Notes ได้จริงตามกฎ BR-04 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | **API-09** | API | BR-09 | Requester หรือ Admin พยายามเข้าถึง IT Staff Queue | HTTP 403 Forbidden; ปฏิเสธผู้ใช้งานที่ไม่มีบทบาท IT Staff | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | **API-10** | API | BR-09 | IT Staff หรือ Requester พยายามเข้าถึง Admin User Management | HTTP 403 Forbidden; ปฏิเสธการเข้าถึงหน้าจอจัดการผู้ใช้ | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | **API-11** | API | AC-06, FR-09, FR-10 | IT Staff เรียกดู Ticket Queue พร้อม Search, Filters, Sort และ Pagination | HTTP 200; คืนค่ารายการตั๋วพร้อม Metadata แบ่งหน้า (totalItems, totalPages) | `server/tests/lab-03/staff-queue.api.test.ts` | Pass |
@@ -64,7 +65,7 @@
 | **AC-01** | Valid Authentication & Role Return | API-01, API-02, UI-01, E2E-01 |
 | **AC-02** | Mandatory First-Login Password Change | API-04, UI-02, E2E-02 |
 | **AC-03** | Requester Data Isolation & Ownership Protection | API-07, E2E-05 |
-| **AC-04** | Internal Notes Confidentiality (Hidden from Requester) | API-08 |
+| **AC-04** | Internal Notes Confidentiality & Access (Hidden from Requester, Visible to IT Staff & Admin) | API-08, API-08b |
 | **AC-05** | Deactivated/Inactive Account Login Blocking | API-03 |
 | **AC-06** | IT Ticket Queue Search, Filter, Sort, Pagination | API-11, UI-03, E2E-03 |
 | **AC-07** | Ticket Ownership Claim & Reassign | API-12, API-13, UI-04, E2E-03 |
@@ -106,7 +107,7 @@ npx playwright test
 ## 6. Final Results Summary
 *(หมายเหตุ: ส่วนนี้จะได้รับการอัปเดตเป็นผลการรันจริงเมื่อดำเนินการพัฒนาโค้ดเสร็จสิ้นสมบูรณ์)*
 
-- **Unit & API Tests:** 26/26 Planned (Pending Implementation)
+- **Unit & API Tests:** 27/27 Planned (Pending Implementation)
 - **UI Component Tests:** 6/6 Planned (Pending Implementation)
 - **E2E Integration Tests:** 5/5 Planned (Pending Implementation)
 - **Status:** Test plan approved. Ready to proceed with UI Specification and API Specification.
