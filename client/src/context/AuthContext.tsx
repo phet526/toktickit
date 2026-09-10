@@ -1,0 +1,101 @@
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { User, getMe, login as apiLogin, logout as apiLogout, changePassword as apiChangePassword } from "../api";
+
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<User>;
+  logout: () => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string, confirmPassword: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const initialUser: User | null = (() => {
+    try {
+      const id = localStorage.getItem("requesterId");
+      const name = localStorage.getItem("requesterName");
+      if (id && name) {
+        return {
+          id: Number(id),
+          name,
+          email: `${name.toLowerCase().replace(/\s+/g, ".")}@toktickit.com`,
+          role: "REQUESTER",
+          isActive: true,
+          mustChangePassword: false
+        };
+      }
+    } catch {
+      // localStorage might not be available
+    }
+    return null;
+  })();
+
+  const [user, setUser] = useState<User | null>(initialUser);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const refreshUser = async () => {
+    try {
+      const data = await getMe();
+      setUser(data.user);
+      if (data.user) {
+        localStorage.setItem("requesterId", String(data.user.id));
+        localStorage.setItem("requesterName", data.user.name);
+      }
+    } catch {
+      // If we don't have a valid session cookie, clear user
+      if (!initialUser) {
+        setUser(null);
+        localStorage.removeItem("requesterId");
+        localStorage.removeItem("requesterName");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshUser();
+  }, []);
+
+  const login = async (email: string, password: string): Promise<User> => {
+    const res = await apiLogin(email, password);
+    setUser(res.user);
+    localStorage.setItem("requesterId", String(res.user.id));
+    localStorage.setItem("requesterName", res.user.name);
+    return res.user;
+  };
+
+  const logout = async () => {
+    try {
+      await apiLogout();
+    } finally {
+      setUser(null);
+      localStorage.removeItem("requesterId");
+      localStorage.removeItem("requesterName");
+    }
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string, confirmPassword: string) => {
+    const res = await apiChangePassword(currentPassword, newPassword, confirmPassword);
+    if (user) {
+      setUser({ ...user, mustChangePassword: res.mustChangePassword });
+    }
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, loading, login, logout, changePassword, refreshUser }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};

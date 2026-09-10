@@ -29,7 +29,7 @@ export class TicketService {
 
     // 2. Foreign Key Validations
     const [requester, category, relatedSystem] = await Promise.all([
-      prisma.developmentRequester.findUnique({ where: { id: data.requesterId } }),
+      prisma.user.findUnique({ where: { id: data.requesterId } }),
       prisma.category.findUnique({ where: { id: data.categoryId } }),
       prisma.relatedSystem.findUnique({ where: { id: data.relatedSystemId } })
     ]);
@@ -41,13 +41,14 @@ export class TicketService {
     // 3. Generate Ticket No
     const ticketNo = await generateTicketNumber();
 
-    // 4. Create Ticket (BR-02: Status = "New")
+    // 4. Create Ticket (BR-02: Status = "New", BR-14: itPriority copies requestedPriority)
     const newTicket = await prisma.ticket.create({
       data: {
         ticketNo,
         summary: data.summary,
         description: data.description,
         requestedPriority: data.requestedPriority,
+        itPriority: data.requestedPriority,
         currentStatus: "New",
         requesterId: data.requesterId,
         categoryId: data.categoryId,

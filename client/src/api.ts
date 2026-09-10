@@ -10,6 +10,15 @@ export interface RelatedSystem {
   name: string;
 }
 
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: "REQUESTER" | "IT_STAFF" | "ADMINISTRATOR";
+  isActive: boolean;
+  mustChangePassword?: boolean;
+}
+
 export interface DevelopmentRequester {
   id: number;
   name: string;
@@ -20,13 +29,77 @@ export interface SystemStatus {
   categories: Category[];
 }
 
+export async function login(email: string, password: string): Promise<{ message: string; user: User }> {
+  const res = await fetch(`${API_URL}/api/v1/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email, password })
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || "Login failed");
+  }
+
+  return res.json();
+}
+
+export async function logout(): Promise<{ message: string }> {
+  const res = await fetch(`${API_URL}/api/v1/auth/logout`, {
+    method: "POST",
+    credentials: "include"
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || "Logout failed");
+  }
+
+  return res.json();
+}
+
+export async function getMe(): Promise<{ user: User }> {
+  const res = await fetch(`${API_URL}/api/v1/auth/me`, {
+    method: "GET",
+    credentials: "include"
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || "Not authenticated");
+  }
+
+  return res.json();
+}
+
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+  confirmPassword: string
+): Promise<{ message: string; mustChangePassword: boolean }> {
+  const res = await fetch(`${API_URL}/api/v1/auth/change-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ currentPassword, newPassword, confirmPassword })
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to change password");
+  }
+
+  return res.json();
+}
+
 export async function checkSystem(): Promise<SystemStatus> {
-  const healthRes = await fetch(`${API_URL}/api/health`);
+  const healthRes = await fetch(`${API_URL}/api/health`, { credentials: "include" });
   if (!healthRes.ok) {
     throw new Error("Health check failed");
   }
 
-  const categoriesRes = await fetch(`${API_URL}/api/categories`);
+  const categoriesRes = await fetch(`${API_URL}/api/categories`, { credentials: "include" });
   if (!categoriesRes.ok) {
     throw new Error("Categories fetch failed");
   }
@@ -36,13 +109,13 @@ export async function checkSystem(): Promise<SystemStatus> {
 }
 
 export async function getRelatedSystems(): Promise<RelatedSystem[]> {
-  const res = await fetch(`${API_URL}/api/v1/related-systems`);
+  const res = await fetch(`${API_URL}/api/v1/related-systems`, { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch related systems");
   return res.json();
 }
 
 export async function getRequesters(): Promise<DevelopmentRequester[]> {
-  const res = await fetch(`${API_URL}/api/v1/requesters/active`);
+  const res = await fetch(`${API_URL}/api/v1/requesters/active`, { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch requesters");
   return res.json();
 }
@@ -60,6 +133,7 @@ export async function createTicket(payload: CreateTicketPayload) {
   const res = await fetch(`${API_URL}/api/v1/tickets`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(payload)
   });
   
@@ -71,12 +145,14 @@ export async function createTicket(payload: CreateTicketPayload) {
   return res.json();
 }
 
-export async function uploadAttachment(ticketId: number, file: File, requesterId: number) {
+export async function uploadAttachment(ticketId: number, file: File, requesterId?: number) {
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch(`${API_URL}/api/v1/tickets/${ticketId}/attachments?requesterId=${requesterId}`, {
+  const query = requesterId ? `?requesterId=${requesterId}` : "";
+  const res = await fetch(`${API_URL}/api/v1/tickets/${ticketId}/attachments${query}`, {
     method: "POST",
+    credentials: "include",
     body: formData
   });
 
@@ -89,7 +165,7 @@ export async function uploadAttachment(ticketId: number, file: File, requesterId
 }
 
 export interface TicketListParams {
-  requesterId: number;
+  requesterId?: number;
   search?: string;
   category?: string;
   system?: string;
@@ -107,7 +183,9 @@ export async function getTickets(params: TicketListParams) {
     }
   });
 
-  const res = await fetch(`${API_URL}/api/v1/tickets?${query.toString()}`);
+  const res = await fetch(`${API_URL}/api/v1/tickets?${query.toString()}`, {
+    credentials: "include"
+  });
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.error || "Failed to fetch tickets");
@@ -115,8 +193,11 @@ export async function getTickets(params: TicketListParams) {
   return res.json();
 }
 
-export async function getTicketById(id: number, requesterId: number) {
-  const res = await fetch(`${API_URL}/api/v1/tickets/${id}?requesterId=${requesterId}`);
+export async function getTicketById(id: number, requesterId?: number) {
+  const query = requesterId ? `?requesterId=${requesterId}` : "";
+  const res = await fetch(`${API_URL}/api/v1/tickets/${id}${query}`, {
+    credentials: "include"
+  });
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.error || "Failed to fetch ticket");
@@ -128,6 +209,7 @@ export async function deleteAttachment(ticketId: number, attachmentId: number, r
   const res = await fetch(`${API_URL}/api/v1/tickets/${ticketId}/attachments/${attachmentId}`, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify({ requesterId, reason })
   });
   
