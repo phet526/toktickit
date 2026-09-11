@@ -248,6 +248,21 @@ describe("Lab 3 — Authentication Foundation & Requester Regression Tests", () 
       expect(meRes.body.user.role).toBe("REQUESTER");
     });
 
+    it("API-04: should reject password change if new password is same as current password", async () => {
+      const changeRes = await request(app)
+        .post("/api/v1/auth/change-password")
+        .set("Cookie", sessionCookie)
+        .send({
+          currentPassword: "Toktick2026!",
+          newPassword: "Toktick2026!",
+          confirmPassword: "Toktick2026!"
+        });
+
+      expect(changeRes.status).toBe(400);
+      expect(changeRes.body.error).toBe("New password cannot be the same as the current password");
+      expect(changeRes.body.code).toBe("PASSWORD_SAME_AS_CURRENT");
+    });
+
     it("API-04: should change password and unlock mustChangePassword flag", async () => {
       const changeRes = await request(app)
         .post("/api/v1/auth/change-password")

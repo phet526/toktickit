@@ -137,6 +137,13 @@ export class AuthService {
       };
     }
 
+    if (currentPassword === newPassword || await bcrypt.compare(newPassword, user.passwordHash)) {
+      return {
+        status: 400,
+        body: { error: "New password cannot be the same as the current password", code: "PASSWORD_SAME_AS_CURRENT" }
+      };
+    }
+
     const newHash = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
       where: { id: userId },

@@ -23,8 +23,9 @@ export default function ChangePassword() {
   );
   const allRulesPassed = ruleLength && ruleCase && ruleNumberAndSpecial;
 
+  const isSameAsCurrent = Boolean(currentPassword && newPassword && currentPassword === newPassword);
   const passwordsMatch = newPassword === confirmPassword && confirmPassword.length > 0;
-  const isFormValid = Boolean(currentPassword.trim()) && allRulesPassed && passwordsMatch;
+  const isFormValid = Boolean(currentPassword.trim()) && allRulesPassed && passwordsMatch && !isSameAsCurrent;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,8 +125,8 @@ export default function ChangePassword() {
                 <input
                   id="newPassword"
                   type={showNewPassword ? "text" : "password"}
-                  className="form-control"
-                  style={{ borderRadius: "8px 0 0 8px", borderColor: "#D1D5DB" }}
+                  className={`form-control ${isSameAsCurrent ? "is-invalid" : ""}`}
+                  style={{ borderRadius: "8px 0 0 8px", borderColor: isSameAsCurrent ? "#DC2626" : "#D1D5DB" }}
                   placeholder="Enter new strong password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
@@ -135,13 +136,18 @@ export default function ChangePassword() {
                 <button
                   type="button"
                   className="btn btn-outline-secondary"
-                  style={{ borderRadius: "0 8px 8px 0", borderColor: "#D1D5DB" }}
+                  style={{ borderRadius: "0 8px 8px 0", borderColor: isSameAsCurrent ? "#DC2626" : "#D1D5DB" }}
                   onClick={() => setShowNewPassword(!showNewPassword)}
                   aria-label={showNewPassword ? "Hide new password" : "Show new password"}
                 >
                   {showNewPassword ? "Hide" : "Show"}
                 </button>
               </div>
+              {isSameAsCurrent && (
+                <div className="text-danger small mt-1" style={{ fontSize: "0.8rem" }}>
+                  New password cannot be the same as current password
+                </div>
+              )}
             </div>
 
             {/* Confirm New Password */}

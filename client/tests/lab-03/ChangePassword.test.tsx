@@ -83,6 +83,23 @@ describe("UI-02: Mandatory Change Password Component Tests", () => {
     expect(screen.getByRole("button", { name: /continue/i })).toBeDisabled();
   });
 
+  it("disables Continue button and displays error feedback when new password is same as current password", () => {
+    render(<ChangePassword />);
+
+    fireEvent.change(screen.getByLabelText(/current \(temporary\) password/i), {
+      target: { value: "Toktick2026!" },
+    });
+    fireEvent.change(screen.getByLabelText(/^new password$/i), {
+      target: { value: "Toktick2026!" },
+    });
+    fireEvent.change(screen.getByLabelText(/confirm new password/i), {
+      target: { value: "Toktick2026!" },
+    });
+
+    expect(screen.getByText(/new password cannot be the same as current password/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /continue/i })).toBeDisabled();
+  });
+
   it("enables Continue button only when all fields and rules are fully satisfied", () => {
     render(<ChangePassword />);
 
