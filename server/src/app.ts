@@ -4,6 +4,7 @@ import { getPrisma } from "./prisma.js";
 import ticketsRouter from "./routes/tickets.router.js";
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/auth.router.js";
+import staffTicketsRouter from "./routes/staff-tickets.router.js";
 // getPrisma() is your lazy database handle. Call it INSIDE a route when you
 // need the DB (Issue 4). It is intentionally unused until then.
 void getPrisma;
@@ -19,6 +20,7 @@ app.use(cookieParser());
 // Mount routers
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/tickets", ticketsRouter);
+app.use("/api/v1/staff/tickets", staffTicketsRouter);
 
 // ---------------------------------------------------------------------------
 // Issue 2 — API health check

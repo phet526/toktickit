@@ -219,3 +219,61 @@ export async function deleteAttachment(ticketId: number, attachmentId: number, r
   }
   return res.json();
 }
+
+export interface StaffTicketItem {
+  id: number;
+  ticketNo: string;
+  createdDate: string;
+  summary: string;
+  category: string;
+  requestedPriority: string;
+  itPriority: string;
+  currentStatus: string;
+  ticketOwner: { id: number; name: string } | null;
+  problemResolvedReported: boolean;
+}
+
+export interface StaffTicketPaginationMeta {
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+  limit: number;
+}
+
+export interface StaffTicketListResponse {
+  data: StaffTicketItem[];
+  meta: StaffTicketPaginationMeta;
+}
+
+export interface StaffTicketQueryParams {
+  search?: string;
+  status?: string;
+  category?: string;
+  priority?: string;
+  owner?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+}
+
+export async function getStaffTickets(params: StaffTicketQueryParams): Promise<StaffTicketListResponse> {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") {
+      query.append(key, value.toString());
+    }
+  });
+
+  const res = await fetch(`${API_URL}/api/v1/staff/tickets?${query.toString()}`, {
+    credentials: "include"
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to fetch staff tickets");
+  }
+
+  return res.json();
+}
+

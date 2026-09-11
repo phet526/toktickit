@@ -6,6 +6,7 @@ import ChangePassword from "./pages/ChangePassword";
 import CreateTicket from "./pages/CreateTicket";
 import MyTickets from "./pages/MyTickets";
 import TicketDetail from "./pages/TicketDetail";
+import StaffTicketQueue from "./pages/StaffTicketQueue";
 import Layout from "./components/Layout";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
@@ -47,15 +48,19 @@ function AppRoutes() {
     return <ChangePassword />;
   }
 
+  const isStaff = user.role === "IT_STAFF" || user.role === "ADMINISTRATOR";
+  const defaultHome = isStaff ? "/staff/queue" : "/my-tickets";
+
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/my-tickets" replace />} />
+          <Route index element={<Navigate to={defaultHome} replace />} />
           <Route path="my-tickets" element={<MyTickets />} />
           <Route path="create-ticket" element={<CreateTicket />} />
           <Route path="tickets/:id" element={<TicketDetail />} />
-          <Route path="*" element={<Navigate to="/my-tickets" replace />} />
+          <Route path="staff/queue" element={isStaff ? <StaffTicketQueue /> : <Navigate to="/my-tickets" replace />} />
+          <Route path="*" element={<Navigate to={defaultHome} replace />} />
         </Route>
       </Routes>
     </BrowserRouter>
