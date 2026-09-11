@@ -11,13 +11,37 @@ datasource db {
 }
 
 // ---------------------------------------------------------------------------
-// Issue 3 — Create and seed IT request categories
-// Define a Category model with:
-//   id        Int      @id @default(autoincrement())
-//   name      String   @unique
-//   createdAt DateTime @default(now())
-// Then run:  npx prisma migrate dev --name init
-// TODO(Issue 3): add the Category model below.
+// 1. Enums
+// ---------------------------------------------------------------------------
+enum Role {
+  REQUESTER
+  IT_STAFF
+  ADMINISTRATOR
+}
+
+// ---------------------------------------------------------------------------
+// 2. User & Authentication Model (Lab 3)
+// ---------------------------------------------------------------------------
+model User {
+  id                 Int            @id @default(autoincrement())
+  name               String
+  email              String         @unique
+  passwordHash       String
+  role               Role           @default(REQUESTER)
+  isActive           Boolean        @default(true)
+  mustChangePassword Boolean        @default(true)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  // Relationships
+  requestedTickets   Ticket[]       @relation("RequesterTickets")
+  assignedTickets    Ticket[]       @relation("AssignedStaffTickets")
+  comments           Comment[]
+  notes              InternalNote[]
+}
+
+// ---------------------------------------------------------------------------
+// 3. Category & Related System (Lab 2 Continuous)
 // ---------------------------------------------------------------------------
 model Category {
   id        Int      @id @default(autoincrement())
@@ -27,50 +51,83 @@ model Category {
   tickets   Ticket[]
 }
 
-model DevelopmentRequester {
-  id       Int       @id @default(autoincrement())
-  name     String
-  email    String    @unique
-  isActive Boolean   @default(true)
-  
-  tickets  Ticket[]
-}
-
 model RelatedSystem {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
+  id       Int      @id @default(autoincrement())
+  name     String   @unique
   
   tickets  Ticket[]
 }
 
+// ---------------------------------------------------------------------------
+// 4. Ticket Model (Evolved from Lab 2)
+// ---------------------------------------------------------------------------
 model Ticket {
-  id                Int       @id @default(autoincrement())
-  ticketNo          String    @unique
-  summary           String    @db.VarChar(150)
-  description       String    @db.VarChar(2000)
-  requestedPriority String
-  currentStatus     String    @default("New")
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id                      Int            @id @default(autoincrement())
+  ticketNo                String         @unique
+  summary                 String         @db.VarChar(150)
+  description             String         @db.VarChar(2000)
+  requestedPriority       String
+  itPriority              String         @default("") // Initial value copied from requestedPriority
+  currentStatus           String         @default("New")
+  problemResolvedReported Boolean        @default(false)
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
 
-  requesterId       Int
-  requester         DevelopmentRequester @relation(fields: [requesterId], references: [id])
-  categoryId        Int
-  category          Category             @relation(fields: [categoryId], references: [id])
-  relatedSystemId   Int
-  relatedSystem     RelatedSystem        @relation(fields: [relatedSystemId], references: [id])
+  requesterId             Int
+  requester               User           @relation("RequesterTickets", fields: [requesterId], references: [id])
+  
+  assignedStaffId         Int?
+  assignedStaff           User?          @relation("AssignedStaffTickets", fields: [assignedStaffId], references: [id])
 
-  attachments       Attachment[]
+  categoryId              Int
+  category                Category       @relation(fields: [categoryId], references: [id])
+  
+  relatedSystemId         Int
+  relatedSystem           RelatedSystem  @relation(fields: [relatedSystemId], references: [id])
+
+  attachments             Attachment[]
+  comments                Comment[]
+  internalNotes           InternalNote[]
 }
 
+// ---------------------------------------------------------------------------
+// 5. Attachment Model (Lab 2 Continuous - Soft Removal)
+// ---------------------------------------------------------------------------
 model Attachment {
-  id             Int       @id @default(autoincrement())
-  filename       String
-  size           Int
-  mimeType       String
-  deletedAt      DateTime? // สำหรับทำ Soft-removal
-  deletedReason  String?   // สำหรับทำ Soft-removal
+  id            Int       @id @default(autoincrement())
+  filename      String
+  size          Int
+  mimeType      String
+  deletedAt     DateTime? // สำหรับทำ Soft-removal
+  deletedReason String?   // สำหรับทำ Soft-removal
 
-  ticketId       Int
-  ticket         Ticket    @relation(fields: [ticketId], references: [id])
+  ticketId      Int
+  ticket        Ticket    @relation(fields: [ticketId], references: [id])
+}
+
+// ---------------------------------------------------------------------------
+// 6. Public Comments & Internal Notes Models (Lab 3 Pre-wired)
+// ---------------------------------------------------------------------------
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.VarChar(1000)
+  createdAt DateTime @default(now())
+
+  ticketId  Int
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+model InternalNote {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.VarChar(1000)
+  createdAt DateTime @default(now())
+
+  ticketId  Int
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id])
 }

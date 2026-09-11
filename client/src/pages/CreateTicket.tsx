@@ -52,7 +52,7 @@ export default function CreateTicket() {
     setAttachmentError("");
 
     if (!requesterId) {
-      setErrors({ general: "Development Requester context is missing. Please select a requester first." });
+      setErrors({ general: "Requester authentication context is missing. Please sign in again." });
       return;
     }
 

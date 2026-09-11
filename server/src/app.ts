@@ -2,6 +2,8 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import { getPrisma } from "./prisma.js";
 import ticketsRouter from "./routes/tickets.router.js";
+import cookieParser from "cookie-parser";
+import authRouter from "./routes/auth.router.js";
 // getPrisma() is your lazy database handle. Call it INSIDE a route when you
 // need the DB (Issue 4). It is intentionally unused until then.
 void getPrisma;
@@ -10,10 +12,12 @@ void getPrisma;
 // Supertest can import `app` without opening a port. Do not merge these files.
 export const app = express();
 
-app.use(cors());          // already wired: lets the Vite dev server call this API
+app.use(cors({ origin: true, credentials: true })); // credentials for cookie support
 app.use(express.json());
+app.use(cookieParser());
 
-// Mount the tickets router for Issue 12
+// Mount routers
+app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/tickets", ticketsRouter);
 
 // ---------------------------------------------------------------------------
@@ -75,8 +79,8 @@ app.get("/api/v1/related-systems", async (_req: Request, res: Response) => {
 app.get("/api/v1/requesters/active", async (_req: Request, res: Response) => {
   try {
     const prisma = getPrisma();
-    const requesters = await prisma.developmentRequester.findMany({
-      where: { isActive: true },
+    const requesters = await prisma.user.findMany({
+      where: { isActive: true, role: "REQUESTER" },
       select: { id: true, name: true },
       orderBy: { id: 'asc' },
     });
