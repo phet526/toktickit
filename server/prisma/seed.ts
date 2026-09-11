@@ -260,8 +260,37 @@ async function main() {
         });
       }
     }
+
+    // 8. Seed Attachments for Requester A (TKT-2026-00004)
+    if (t.ticketNo === "TKT-2026-00004") {
+      const existingAttachments = await prisma.attachment.count({ where: { ticketId: createdTicket.id } });
+      if (existingAttachments === 0) {
+        await prisma.attachment.createMany({
+          data: [
+            {
+              ticketId: createdTicket.id,
+              filename: "screenshot_error_indexing.png",
+              size: 24580,
+              mimeType: "image/png"
+            },
+            {
+              ticketId: createdTicket.id,
+              filename: "outlook_event_log.txt",
+              size: 10240,
+              mimeType: "text/plain"
+            },
+            {
+              ticketId: createdTicket.id,
+              filename: "system_info.pdf",
+              size: 51200,
+              mimeType: "application/pdf"
+            }
+          ]
+        });
+      }
+    }
   }
-  console.log("✅ Sample tickets with comments and notes seeded");
+  console.log("✅ Sample tickets with comments, notes, and attachments seeded");
 
   console.log("🎉 All Lab 3 seed data completed successfully!");
 }

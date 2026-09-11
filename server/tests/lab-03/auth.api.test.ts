@@ -10,6 +10,19 @@ describe("Lab 3 — Authentication Foundation & Requester Regression Tests", () 
 
   beforeAll(async () => {
     const hash = bcrypt.hashSync("Toktick2026!", 10);
+    const reqA = await prisma.user.upsert({
+      where: { email: "requester_a@example.com" },
+      update: { passwordHash: hash, mustChangePassword: true, isActive: true },
+      create: {
+        name: "Requester A",
+        email: "requester_a@example.com",
+        passwordHash: hash,
+        mustChangePassword: true,
+        role: "REQUESTER",
+        isActive: true
+      }
+    });
+
     await prisma.user.upsert({
       where: { email: "requester_b@example.com" },
       update: { passwordHash: hash, mustChangePassword: true, isActive: true },
@@ -22,6 +35,57 @@ describe("Lab 3 — Authentication Foundation & Requester Regression Tests", () 
         isActive: true
       }
     });
+
+    // Ensure Requester A has at least 2 tickets and 3 attachments for API-26 Zero Regression test
+    const tickets = await prisma.ticket.findMany({
+      where: { requesterId: reqA.id },
+      include: { attachments: true }
+    });
+
+    let targetTicketId = tickets[0]?.id;
+    if (tickets.length < 2) {
+      const category = (await prisma.category.findFirst()) || (await prisma.category.create({ data: { name: "General" } }));
+      const system = (await prisma.relatedSystem.findFirst()) || (await prisma.relatedSystem.create({ data: { name: "System" } }));
+      
+      const t1 = await prisma.ticket.create({
+        data: {
+          ticketNo: `TKT-MIGRATE-001-${Date.now()}`,
+          summary: "Migrated Ticket 1",
+          description: "Lab 2 ticket migrated",
+          requestedPriority: "High",
+          itPriority: "High",
+          currentStatus: "Open",
+          requesterId: reqA.id,
+          categoryId: category.id,
+          relatedSystemId: system.id
+        }
+      });
+      await prisma.ticket.create({
+        data: {
+          ticketNo: `TKT-MIGRATE-002-${Date.now()}`,
+          summary: "Migrated Ticket 2",
+          description: "Lab 2 ticket migrated",
+          requestedPriority: "Medium",
+          itPriority: "Medium",
+          currentStatus: "In Progress",
+          requesterId: reqA.id,
+          categoryId: category.id,
+          relatedSystemId: system.id
+        }
+      });
+      targetTicketId = t1.id;
+    }
+
+    const currentAttachments = tickets.reduce((sum, t) => sum + t.attachments.length, 0);
+    if (currentAttachments < 3 && targetTicketId) {
+      await prisma.attachment.createMany({
+        data: [
+          { ticketId: targetTicketId, filename: "sample_doc1.pdf", size: 1024, mimeType: "application/pdf" },
+          { ticketId: targetTicketId, filename: "sample_img1.png", size: 2048, mimeType: "image/png" },
+          { ticketId: targetTicketId, filename: "sample_log1.txt", size: 512, mimeType: "text/plain" }
+        ]
+      });
+    }
   });
 
   describe("UNIT-01: Password Complexity Validator", () => {
@@ -229,8 +293,11 @@ describe("Lab 3 — Authentication Foundation & Requester Regression Tests", () 
 
   describe("API-26 & Zero Regression: Migrated Requester Data & Ticket Operations", () => {
     it("should retain existing Lab 2 tickets and attachments for migrated Requester A", async () => {
+      const reqA = await prisma.user.findFirst({ where: { email: "requester_a@example.com" } });
+      const reqAId = reqA?.id ?? 1;
+
       const tickets = await prisma.ticket.findMany({
-        where: { requesterId: 1 },
+        where: { requesterId: reqAId },
         include: { attachments: true, requester: true }
       });
 
@@ -245,13 +312,16 @@ describe("Lab 3 — Authentication Foundation & Requester Regression Tests", () 
     });
 
     it("should allow creating a new ticket through API using migrated requester", async () => {
+      const reqA = await prisma.user.findFirst({ where: { email: "requester_a@example.com" } });
+      const reqAId = reqA?.id ?? 1;
+
       const category = await prisma.category.findFirst();
       const relatedSystem = await prisma.relatedSystem.findFirst();
 
       const res = await request(app)
         .post("/api/v1/tickets")
         .send({
-          requesterId: 1, // Requester A
+          requesterId: reqAId, // Requester A
           categoryId: category!.id,
           relatedSystemId: relatedSystem!.id,
           summary: "Lab 3 Regression Test Ticket",
