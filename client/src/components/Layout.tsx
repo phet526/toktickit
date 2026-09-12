@@ -101,22 +101,32 @@ export default function Layout({ requesterName, onLogout }: LayoutProps) {
                 <li className="nav-item">
                   <Link 
                     className={`nav-link px-3 ${location.pathname.startsWith("/staff") ? "active fw-semibold" : ""}`} 
-                    to="/my-tickets"
+                    to="/staff/queue"
                   >
-                    Ticket Queue
+                    My Queue
                   </Link>
                 </li>
               )}
 
               {role === "ADMINISTRATOR" && (
-                <li className="nav-item">
-                  <Link 
-                    className={`nav-link px-3 ${location.pathname.startsWith("/admin") ? "active fw-semibold" : ""}`} 
-                    to="/my-tickets"
-                  >
-                    User Management
-                  </Link>
-                </li>
+                <>
+                  <li className="nav-item">
+                    <Link 
+                      className={`nav-link px-3 ${location.pathname.startsWith("/staff") ? "active fw-semibold" : ""}`} 
+                      to="/staff/queue"
+                    >
+                      Ticket Queue
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link 
+                      className={`nav-link px-3 ${location.pathname.startsWith("/admin") ? "active fw-semibold" : ""}`} 
+                      to="/admin/users"
+                    >
+                      User Management
+                    </Link>
+                  </li>
+                </>
               )}
             </ul>
 
