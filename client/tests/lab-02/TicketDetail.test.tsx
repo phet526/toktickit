@@ -7,7 +7,8 @@ import * as api from "../../src/api";
 // Mock the API module
 vi.mock("../../src/api", () => ({
   getTicketById: vi.fn(),
-  deleteAttachment: vi.fn()
+  deleteAttachment: vi.fn(),
+  getPublicComments: vi.fn().mockResolvedValue([])
 }));
 
 describe("TicketDetail Component - Soft Delete Attachment", () => {

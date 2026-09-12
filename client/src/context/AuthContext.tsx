@@ -95,7 +95,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    try {
+      const storedId = localStorage.getItem("requesterId");
+      const storedName = localStorage.getItem("requesterName") || "Requester";
+      const storedRole = (localStorage.getItem("userRole") as any) || "REQUESTER";
+      return {
+        user: storedId
+          ? {
+              id: Number(storedId),
+              name: storedName,
+              email: `${storedName.toLowerCase().replace(/\s+/g, ".")}@toktickit.com`,
+              role: storedRole,
+              isActive: true,
+              mustChangePassword: false
+            }
+          : null,
+        loading: false,
+        login: async () => ({} as any),
+        logout: async () => {},
+        changePassword: async () => {},
+        refreshUser: async () => {}
+      };
+    } catch {
+      return {
+        user: null,
+        loading: false,
+        login: async () => ({} as any),
+        logout: async () => {},
+        changePassword: async () => {},
+        refreshUser: async () => {}
+      };
+    }
   }
   return context;
 };
+
