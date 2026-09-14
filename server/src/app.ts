@@ -5,6 +5,7 @@ import ticketsRouter from "./routes/tickets.router.js";
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/auth.router.js";
 import staffTicketsRouter from "./routes/staff-tickets.router.js";
+import adminUsersRouter from "./routes/admin-users.router.js";
 import { requireAuth, requireRole } from "./middlewares/auth.middleware.js";
 import { getActiveStaffList } from "./controllers/staff-tickets.controller.js";
 // getPrisma() is your lazy database handle. Call it INSIDE a route when you
@@ -23,6 +24,7 @@ app.use(cookieParser());
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/tickets", ticketsRouter);
 app.use("/api/v1/staff/tickets", staffTicketsRouter);
+app.use("/api/v1/admin/users", adminUsersRouter);
 
 // ---------------------------------------------------------------------------
 // Issue 2 — API health check
