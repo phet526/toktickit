@@ -282,4 +282,43 @@ describe("UI-04: Staff Ticket Detail & Operations Component Tests", () => {
     expect(screen.queryByRole("tab", { name: /Internal Notes/i })).not.toBeInTheDocument();
     expect(screen.queryByText("🔒 Internal Note - IT Staff Only")).not.toBeInTheDocument();
   });
+
+  it("UI-04 / BR-09: renders Administrator in View-Only mode (Claim button hidden, Controls disabled)", async () => {
+    vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+      user: {
+        id: 1,
+        name: "John Smith",
+        email: "john.smith@toktickit.com",
+        role: "ADMINISTRATOR",
+        isActive: true
+      },
+      loading: false,
+      login: vi.fn(),
+      logout: vi.fn(),
+      changePassword: vi.fn(),
+      refreshUser: vi.fn()
+    });
+
+    renderComponent();
+
+    await screen.findByText("Cannot connect to office VPN from home");
+
+    // Operations & Controls header is present
+    expect(screen.getByText("Operations & Controls")).toBeInTheDocument();
+    expect(screen.getByText(/Administrator Mode:/i)).toBeInTheDocument();
+
+    // Claim Ticket button must NOT be present for Administrator!
+    expect(screen.queryByRole("button", { name: /Claim Ticket/i })).not.toBeInTheDocument();
+
+    // Reassign and Priority dropdowns must be disabled
+    const reassignSelect = screen.getByLabelText(/Reassign to another staff:|Or assign to staff member:/i);
+    expect(reassignSelect).toBeDisabled();
+
+    const prioritySelect = screen.getByLabelText(/IT Priority/i);
+    expect(prioritySelect).toBeDisabled();
+
+    // Status transition dropdown should not be rendered for Admin
+    expect(screen.queryByLabelText(/Ticket Status/i)?.tagName).not.toBe("SELECT");
+    expect(screen.getByText(/Status updates are restricted to IT Staff/i)).toBeInTheDocument();
+  });
 });

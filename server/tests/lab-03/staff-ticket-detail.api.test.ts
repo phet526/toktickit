@@ -173,6 +173,16 @@ describe("Lab 3 — Staff Ticket Detail & Operations Tests (UNIT-02, API-12, API
 
       expect(res.status).toBe(403);
     });
+
+    it("should block Administrator from claiming ticket with HTTP 403 (BR-09)", async () => {
+      const res = await request(app)
+        .patch(`/api/v1/staff/tickets/${testTicketId}/ownership`)
+        .set("Cookie", adminCookie)
+        .send({ assignedStaffId: staffUserId });
+
+      expect(res.status).toBe(403);
+      expect(res.body.code).toBe("FORBIDDEN");
+    });
   });
 
   describe("API-13: IT Staff Reassign Ticket Ownership", () => {
@@ -200,6 +210,16 @@ describe("Lab 3 — Staff Ticket Detail & Operations Tests (UNIT-02, API-12, API
 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain("active IT Staff");
+    });
+
+    it("should block Administrator from reassigning ticket with HTTP 403 (BR-09)", async () => {
+      const res = await request(app)
+        .patch(`/api/v1/staff/tickets/${testTicketId}/ownership`)
+        .set("Cookie", adminCookie)
+        .send({ assignedStaffId: anotherStaffId });
+
+      expect(res.status).toBe(403);
+      expect(res.body.code).toBe("FORBIDDEN");
     });
   });
 
@@ -237,6 +257,16 @@ describe("Lab 3 — Staff Ticket Detail & Operations Tests (UNIT-02, API-12, API
         .send({ itPriority: "Low" });
 
       expect(res.status).toBe(403);
+    });
+
+    it("should block Administrator from updating IT priority with HTTP 403 (BR-09)", async () => {
+      const res = await request(app)
+        .patch(`/api/v1/staff/tickets/${testTicketId}/priority`)
+        .set("Cookie", adminCookie)
+        .send({ itPriority: "Low" });
+
+      expect(res.status).toBe(403);
+      expect(res.body.code).toBe("FORBIDDEN");
     });
   });
 
@@ -290,6 +320,16 @@ describe("Lab 3 — Staff Ticket Detail & Operations Tests (UNIT-02, API-12, API
 
       expect(res.status).toBe(403);
     });
+
+    it("should block Administrator from updating ticket status with HTTP 403 (BR-09)", async () => {
+      const res = await request(app)
+        .patch(`/api/v1/staff/tickets/${testTicketId}/status`)
+        .set("Cookie", adminCookie)
+        .send({ status: "Closed" });
+
+      expect(res.status).toBe(403);
+      expect(res.body.code).toBe("FORBIDDEN");
+    });
   });
 
   describe("Ticket Detail Endpoint (GET /api/v1/staff/tickets/:id)", () => {
@@ -309,6 +349,15 @@ describe("Lab 3 — Staff Ticket Detail & Operations Tests (UNIT-02, API-12, API
       expect(Array.isArray(res.body.permittedStatusTransitions)).toBe(true);
       // Resolved allows Closed, Reopened
       expect(res.body.permittedStatusTransitions).toEqual(["Closed", "Reopened"]);
+    });
+
+    it("should allow Administrator to view staff ticket detail with HTTP 200 (view-only)", async () => {
+      const res = await request(app)
+        .get(`/api/v1/staff/tickets/${testTicketId}`)
+        .set("Cookie", adminCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.id).toBe(testTicketId);
     });
 
     it("should block Requester from viewing staff ticket detail with HTTP 403", async () => {

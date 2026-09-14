@@ -21,11 +21,12 @@ import {
 
 export default function TicketDetail() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const ticketId = Number(id);
 
   const isStaff = user?.role === "IT_STAFF" || user?.role === "ADMINISTRATOR";
   const isOnlyStaff = user?.role === "IT_STAFF";
+  const isAdmin = user?.role === "ADMINISTRATOR";
 
   const [ticket, setTicket] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -81,10 +82,10 @@ export default function TicketDetail() {
   };
 
   useEffect(() => {
-    if (ticketId) {
+    if (ticketId && !authLoading) {
       loadTicketData();
     }
-  }, [ticketId, isStaff]);
+  }, [ticketId, isStaff, authLoading, user?.id]);
 
   // Load active staff list for IT Staff/Admin
   useEffect(() => {
@@ -981,6 +982,21 @@ export default function TicketDetail() {
               </div>
 
               <div className="card-body p-3 p-md-4">
+                {isAdmin && (
+                  <div
+                    className="alert alert-info py-2 px-3 small mb-3 d-flex align-items-center gap-2 border-0"
+                    style={{ backgroundColor: "#EBF5FF", color: "#1E429F", borderRadius: "8px" }}
+                  >
+                    <span>🛡️</span>
+                    <div>
+                      <strong>Administrator Mode:</strong>
+                      <div className="small text-muted mt-0">
+                        View-only access. Ticket operations (Claim, Reassign, Priority, Status) are restricted to IT Staff (BR-09).
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* 1. Ticket Ownership Control */}
                 <div className="mb-4 pb-3 border-bottom">
                   <label className="form-label small fw-bold text-dark d-flex justify-content-between">
@@ -1003,16 +1019,18 @@ export default function TicketDetail() {
                       <div className="badge bg-light text-muted border border-dashed py-2 px-3 w-100 mb-2 text-center fs-6">
                         Unassigned Ticket
                       </div>
-                      <button
-                        type="button"
-                        id="btnClaimTicket"
-                        disabled={updatingOwner}
-                        onClick={handleClaim}
-                        className="btn w-100 text-white fw-semibold py-2"
-                        style={{ backgroundColor: "#006B3C", borderRadius: "8px" }}
-                      >
-                        {updatingOwner ? "Claiming..." : "⚡ Claim Ticket (Assign to Me)"}
-                      </button>
+                      {!isAdmin && (
+                        <button
+                          type="button"
+                          id="btnClaimTicket"
+                          disabled={updatingOwner}
+                          onClick={handleClaim}
+                          className="btn w-100 text-white fw-semibold py-2"
+                          style={{ backgroundColor: "#006B3C", borderRadius: "8px" }}
+                        >
+                          {updatingOwner ? "Claiming..." : "⚡ Claim Ticket (Assign to Me)"}
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -1034,7 +1052,7 @@ export default function TicketDetail() {
                             handleReassign(Number(val));
                           }
                         }}
-                        disabled={updatingOwner}
+                        disabled={updatingOwner || isAdmin}
                       >
                         <option value="">Select IT Staff...</option>
                         {activeStaffList.map((s) => (
@@ -1044,6 +1062,9 @@ export default function TicketDetail() {
                         ))}
                       </select>
                     </div>
+                    {isAdmin && (
+                      <div className="form-text small text-muted mt-1">Reassignment is restricted to IT Staff.</div>
+                    )}
                   </div>
                 </div>
 
@@ -1066,7 +1087,7 @@ export default function TicketDetail() {
                     style={{ borderRadius: "8px", borderColor: "#D1D5DB" }}
                     value={ticket.itPriority || ticket.requestedPriority}
                     onChange={(e) => handlePriorityChange(e.target.value)}
-                    disabled={updatingPriority}
+                    disabled={updatingPriority || isAdmin}
                   >
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
@@ -1074,7 +1095,13 @@ export default function TicketDetail() {
                     <option value="Critical">Critical</option>
                   </select>
                   <div className="form-text small text-muted mt-1">
-                    Requested priority remains: <strong>{ticket.requestedPriority}</strong>
+                    {isAdmin ? (
+                      "Priority changes are restricted to IT Staff."
+                    ) : (
+                      <>
+                        Requested priority remains: <strong>{ticket.requestedPriority}</strong>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -1092,7 +1119,11 @@ export default function TicketDetail() {
                     </span>
                   </div>
 
-                  {ticket.permittedStatusTransitions && ticket.permittedStatusTransitions.length > 0 ? (
+                  {isAdmin ? (
+                    <div className="p-2 bg-light rounded text-muted small">
+                      <em>Status updates are restricted to IT Staff. Allowed transitions: {ticket.permittedStatusTransitions?.join(", ") || "None"}</em>
+                    </div>
+                  ) : ticket.permittedStatusTransitions && ticket.permittedStatusTransitions.length > 0 ? (
                     <div>
                       <select
                         id="selectTicketStatus"
