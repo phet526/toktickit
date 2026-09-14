@@ -257,4 +257,109 @@ export class TicketController {
       res.status(500).json({ error: "Internal Server Error" });
     }
   }
+
+  static async getComments(req: Request, res: Response): Promise<void> {
+    try {
+      const ticketId = Number(req.params.id);
+      if (isNaN(ticketId)) {
+        res.status(400).json({ error: "Invalid ticket ID" });
+        return;
+      }
+      const currentUser = req.user;
+      if (!currentUser) {
+        res.status(401).json({ error: "Authentication required", code: "UNAUTHORIZED" });
+        return;
+      }
+
+      const comments = await TicketService.getComments(ticketId, currentUser);
+      res.status(200).json(comments);
+    } catch (error: any) {
+      if (error.message === "NOT_FOUND") {
+        res.status(404).json({ error: "Ticket not found" });
+        return;
+      }
+      if (error.message === "FORBIDDEN") {
+        res.status(403).json({ error: "Forbidden: You do not have permission to view comments on this ticket" });
+        return;
+      }
+      console.error("[TicketController] Error getting comments:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+
+  static async createComment(req: Request, res: Response): Promise<void> {
+    try {
+      const ticketId = Number(req.params.id);
+      if (isNaN(ticketId)) {
+        res.status(400).json({ error: "Invalid ticket ID" });
+        return;
+      }
+      const currentUser = req.user;
+      if (!currentUser) {
+        res.status(401).json({ error: "Authentication required", code: "UNAUTHORIZED" });
+        return;
+      }
+
+      const { content } = req.body;
+      if (!content || typeof content !== "string" || !content.trim()) {
+        res.status(400).json({ error: "Comment content cannot be empty" });
+        return;
+      }
+      if (content.trim().length > 1000) {
+        res.status(400).json({ error: "Comment content must not exceed 1000 characters" });
+        return;
+      }
+
+      const comment = await TicketService.createComment(ticketId, currentUser, content);
+      res.status(201).json(comment);
+    } catch (error: any) {
+      if (error.message === "NOT_FOUND") {
+        res.status(404).json({ error: "Ticket not found" });
+        return;
+      }
+      if (error.message === "FORBIDDEN" || error.message === "FORBIDDEN_ADMIN") {
+        res.status(403).json({ error: "Forbidden: You do not have permission to comment on this ticket" });
+        return;
+      }
+      if (error.message === "EMPTY_CONTENT" || error.message === "CONTENT_TOO_LONG") {
+        res.status(400).json({ error: error.message });
+        return;
+      }
+      console.error("[TicketController] Error creating comment:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+
+  static async indicateProblemResolved(req: Request, res: Response): Promise<void> {
+    try {
+      const ticketId = Number(req.params.id);
+      if (isNaN(ticketId)) {
+        res.status(400).json({ error: "Invalid ticket ID" });
+        return;
+      }
+      const currentUser = req.user;
+      if (!currentUser) {
+        res.status(401).json({ error: "Authentication required", code: "UNAUTHORIZED" });
+        return;
+      }
+
+      const result = await TicketService.indicateProblemResolved(ticketId, currentUser);
+      res.status(200).json(result);
+    } catch (error: any) {
+      if (error.message === "NOT_FOUND") {
+        res.status(404).json({ error: "Ticket not found" });
+        return;
+      }
+      if (error.message === "FORBIDDEN") {
+        res.status(403).json({ error: "Forbidden: Only the ticket requester can indicate resolution" });
+        return;
+      }
+      if (error.message === "INVALID_STATUS") {
+        res.status(400).json({ error: "Problem resolution can only be indicated for Open, In Progress, or Waiting for Requester tickets" });
+        return;
+      }
+      console.error("[TicketController] Error indicating problem resolved:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
 }

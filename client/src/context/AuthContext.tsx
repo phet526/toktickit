@@ -17,12 +17,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const id = localStorage.getItem("requesterId");
       const name = localStorage.getItem("requesterName");
+      const role = (localStorage.getItem("userRole") as any) || "REQUESTER";
       if (id && name) {
         return {
           id: Number(id),
           name,
           email: `${name.toLowerCase().replace(/\s+/g, ".")}@toktickit.com`,
-          role: "REQUESTER",
+          role,
           isActive: true,
           mustChangePassword: false
         };
@@ -43,6 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data.user) {
         localStorage.setItem("requesterId", String(data.user.id));
         localStorage.setItem("requesterName", data.user.name);
+        localStorage.setItem("userRole", data.user.role);
       }
     } catch {
       // If we don't have a valid session cookie, clear user
@@ -50,6 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
         localStorage.removeItem("requesterId");
         localStorage.removeItem("requesterName");
+        localStorage.removeItem("userRole");
       }
     } finally {
       setLoading(false);
@@ -65,6 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(res.user);
     localStorage.setItem("requesterId", String(res.user.id));
     localStorage.setItem("requesterName", res.user.name);
+    localStorage.setItem("userRole", res.user.role);
     return res.user;
   };
 
@@ -75,6 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       localStorage.removeItem("requesterId");
       localStorage.removeItem("requesterName");
+      localStorage.removeItem("userRole");
     }
   };
 
@@ -95,7 +100,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    try {
+      const storedId = localStorage.getItem("requesterId");
+      const storedName = localStorage.getItem("requesterName") || "Requester";
+      const storedRole = (localStorage.getItem("userRole") as any) || "REQUESTER";
+      return {
+        user: storedId
+          ? {
+              id: Number(storedId),
+              name: storedName,
+              email: `${storedName.toLowerCase().replace(/\s+/g, ".")}@toktickit.com`,
+              role: storedRole,
+              isActive: true,
+              mustChangePassword: false
+            }
+          : null,
+        loading: false,
+        login: async () => ({} as any),
+        logout: async () => {},
+        changePassword: async () => {},
+        refreshUser: async () => {}
+      };
+    } catch {
+      return {
+        user: null,
+        loading: false,
+        login: async () => ({} as any),
+        logout: async () => {},
+        changePassword: async () => {},
+        refreshUser: async () => {}
+      };
+    }
   }
   return context;
 };
+

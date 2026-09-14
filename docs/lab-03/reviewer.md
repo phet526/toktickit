@@ -7,7 +7,9 @@
 | PR | Branch | Reviewer verdict |
 |:---|:-------|:-----------------|
 | [#29](https://github.com/phet526/toktickit/pull/29) | feature/sprint3-contract | Pending Review |
+| [#30](https://github.com/phet526/toktickit/pull/30) | feature/auth-foundation | Approved |
 | [#31](https://github.com/phet526/toktickit/pull/31) | feature/staff-ticket-queue | Pending Review |
+| [#32](https://github.com/phet526/toktickit/pull/32) | feature/staff-ticket-operations | Pending Review |
 
 ## Pull Requests I reviewed (authored by my partner)
 | PR | Branch | Reviewer verdict |
