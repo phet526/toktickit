@@ -255,7 +255,7 @@
 
 ### 4.1 Retrieve IT Staff Ticket Queue
 - **Method & Path:** `GET /api/v1/staff/tickets`
-- **Access:** IT Staff Only (Requester และ Administrator จะได้ HTTP 403 Forbidden)
+- **Access:** IT Staff and Administrator (Requester จะได้ HTTP 403 Forbidden)
 - **Query Parameters:**
   - `search` (Optional): ค้นหาจาก Ticket Number หรือ Summary
   - `status` (Optional): กรองสถานะตั๋ว
@@ -288,19 +288,19 @@
     }
     ```
 
-### 4.2 Retrieve Ticket Detail (IT Staff View)
+### 4.2 Retrieve Ticket Detail (IT Staff & Admin View)
 - **Method & Path:** `GET /api/v1/staff/tickets/:id`
-- **Access:** IT Staff Only
+- **Access:** IT Staff and Administrator (Requester จะได้ HTTP 403 Forbidden)
 - **Responses:**
   - `200 OK`: ข้อมูลตั๋วครบถ้วน, ข้อมูลผู้แจ้ง (Requester Name, Email), เจ้าหน้าที่รับผิดชอบ, Attachments, และสถานะการอนุญาตเปลี่ยน State
 
 ### 4.3 Claim / Reassign Ticket Ownership
 - **Method & Path:** `PATCH /api/v1/staff/tickets/:id/ownership`
-- **Access:** IT Staff Only
+- **Access:** IT Staff and Administrator
 - **Request Body:**
   ```json
   {
-    "assignedStaffId": 2 // ส่ง ID ของ IT Staff หรือส่ง ID ตนเองกรณี Claim
+    "assignedStaffId": 2 // ส่ง ID ของ IT Staff หรือ Administrator
   }
   ```
 - **Responses:**
@@ -311,11 +311,11 @@
       "assignedStaff": { "id": 2, "name": "Sarah Johnson" }
     }
     ```
-  - `400 Bad Request`: `assignedStaffId` ไม่ถูกต้อง หรือไม่ใช่ผู้ใช้บทบาท IT Staff ที่ Active
+  - `400 Bad Request`: `assignedStaffId` ไม่ถูกต้อง หรือไม่ใช่ผู้ใช้บทบาท IT Staff หรือ Administrator ที่ Active
 
 ### 4.4 Update IT Priority
 - **Method & Path:** `PATCH /api/v1/staff/tickets/:id/priority`
-- **Access:** IT Staff Only
+- **Access:** IT Staff and Administrator
 - **Request Body:**
   ```json
   {
@@ -331,7 +331,7 @@
 
 ### 4.5 Update Ticket Status
 - **Method & Path:** `PATCH /api/v1/staff/tickets/:id/status`
-- **Access:** IT Staff Only
+- **Access:** IT Staff and Administrator
 - **Request Body:**
   ```json
   {
@@ -364,7 +364,7 @@
     ]
     ```
 - **Create Comment:** `POST /api/v1/tickets/:id/comments`
-  - **Access:** Requester (เฉพาะตั๋วตนเอง), IT Staff (**Administrator ตอบกลับ 403 Forbidden**)
+  - **Access:** Requester (เฉพาะตั๋วตนเอง), IT Staff, Administrator
   - **Request Body:**
     ```json
     { "content": "We are looking into this issue right now." }
@@ -389,7 +389,7 @@
     ]
     ```
 - **Create Note:** `POST /api/v1/staff/tickets/:id/notes`
-  - **Access:** IT Staff Only (**Requester และ Administrator ตอบกลับ 403 Forbidden**)
+  - **Access:** IT Staff, Administrator (**Requester ตอบกลับ 403 Forbidden**)
   - **Request Body:**
     ```json
     { "content": "Coordinating with ISP network engineer." }
@@ -397,7 +397,7 @@
   - **Responses:**
     - `201 Created`: บันทึกข้อความภายในลงระบบสำเร็จ
     - `400 Bad Request`: ข้อความว่างหรือยาวเกิน 1,000 ตัวอักษร
-    - `403 Forbidden`: ผู้ใช้ไม่ใช่ IT Staff
+    - `403 Forbidden`: ผู้ใช้ไม่ใช่ IT Staff หรือ Administrator
 
 ---
 

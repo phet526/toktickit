@@ -283,7 +283,7 @@ describe("UI-04: Staff Ticket Detail & Operations Component Tests", () => {
     expect(screen.queryByText("🔒 Internal Note - IT Staff Only")).not.toBeInTheDocument();
   });
 
-  it("UI-04 / BR-09: renders Administrator in View-Only mode (Claim button hidden, Controls disabled)", async () => {
+  it("UI-04 / BR-09: renders Administrator with full operational controls enabled (Claim button visible, interactive controls)", async () => {
     vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
       user: {
         id: 1,
@@ -305,20 +305,26 @@ describe("UI-04: Staff Ticket Detail & Operations Component Tests", () => {
 
     // Operations & Controls header is present
     expect(screen.getByText("Operations & Controls")).toBeInTheDocument();
-    expect(screen.getByText(/Administrator Mode:/i)).toBeInTheDocument();
 
-    // Claim Ticket button must NOT be present for Administrator!
-    expect(screen.queryByRole("button", { name: /Claim Ticket/i })).not.toBeInTheDocument();
+    // Claim Ticket button MUST be present and enabled for Administrator on unassigned ticket!
+    const claimBtn = screen.getByRole("button", { name: /Claim Ticket/i });
+    expect(claimBtn).toBeInTheDocument();
+    expect(claimBtn).not.toBeDisabled();
 
-    // Reassign and Priority dropdowns must be disabled
+    // Reassign and Priority dropdowns must be enabled
     const reassignSelect = screen.getByLabelText(/Reassign to another staff:|Or assign to staff member:/i);
-    expect(reassignSelect).toBeDisabled();
+    expect(reassignSelect).not.toBeDisabled();
 
     const prioritySelect = screen.getByLabelText(/IT Priority/i);
-    expect(prioritySelect).toBeDisabled();
+    expect(prioritySelect).not.toBeDisabled();
 
-    // Status transition dropdown should not be rendered for Admin
-    expect(screen.queryByLabelText(/Ticket Status/i)?.tagName).not.toBe("SELECT");
-    expect(screen.getByText(/Status updates are restricted to IT Staff/i)).toBeInTheDocument();
+    // Status transition dropdown should be rendered and enabled for Admin
+    const statusSelect = screen.getByRole("combobox", { name: /^Ticket Status$/i });
+    expect(statusSelect).toBeInTheDocument();
+    expect(statusSelect).not.toBeDisabled();
+
+    // Public comment form should be present
+    expect(screen.getByPlaceholderText(/Type your message here/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Post Comment/i })).toBeInTheDocument();
   });
 });
