@@ -10,6 +10,7 @@
 | [#30](https://github.com/phet526/toktickit/pull/30) | feature/auth-foundation | Approved |
 | [#31](https://github.com/phet526/toktickit/pull/31) | feature/staff-ticket-queue | Approved |
 | [#32](https://github.com/phet526/toktickit/pull/32) | feature/staff-ticket-operations | Approved |
+| [#33](https://github.com/phet526/toktickit/pull/33) | feature/admin-user-management | Approved |
 
 ## Pull Requests I reviewed (authored by my partner)
 | PR | Branch | Reviewer verdict |

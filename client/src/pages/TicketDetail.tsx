@@ -904,7 +904,10 @@ export default function TicketDetail() {
                           <div className="d-flex align-items-center justify-content-between mb-2">
                             <div className="d-flex align-items-center gap-2">
                               <span className="fw-semibold text-dark">👤 {n.author?.name}</span>
-                              <span className="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill small">
+                              <span
+                                className="badge rounded-pill"
+                                style={{ ...getRoleBadgeStyle(n.author?.role), fontSize: "0.7rem", fontWeight: 600 }}
+                              >
                                 {n.author?.role}
                               </span>
                             </div>
