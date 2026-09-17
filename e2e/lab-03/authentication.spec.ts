@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+// @ts-ignore
 import { execSync } from 'node:child_process';
 
 test.describe('Lab 3 — Authentication & Session Management (E2E-01, E2E-02)', () => {
