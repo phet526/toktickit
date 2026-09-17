@@ -158,13 +158,15 @@ describe("Lab 3 — Comments & Internal Notes API Tests (API-08, API-08b, API-16
       expect(postRes.status).toBe(403);
     });
 
-    it("should block Administrator from creating public comments with HTTP 403 (BR-09, BR-10)", async () => {
+    it("should allow Administrator to create public comments with HTTP 201 (Superuser)", async () => {
       const res = await request(app)
         .post(`/api/v1/tickets/${ticketAId}/comments`)
         .set("Cookie", adminCookie)
-        .send({ content: "Admin attempting to comment" });
+        .send({ content: "Admin public comment" });
 
-      expect(res.status).toBe(403);
+      expect(res.status).toBe(201);
+      expect(res.body.content).toBe("Admin public comment");
+      expect(res.body.author.role).toBe("ADMINISTRATOR");
     });
 
     it("should allow Administrator to view public comments on any ticket (HTTP 200)", async () => {
@@ -249,13 +251,15 @@ describe("Lab 3 — Comments & Internal Notes API Tests (API-08, API-08b, API-16
       expect(res.body[0].content).toContain("VLAN 20 is dropping packets.");
     });
 
-    it("should BLOCK Administrator from creating internal notes with HTTP 403 (BR-09, BR-11)", async () => {
+    it("should allow Administrator to create internal notes with HTTP 201 (Superuser)", async () => {
       const res = await request(app)
         .post(`/api/v1/staff/tickets/${ticketAId}/notes`)
         .set("Cookie", adminCookie)
-        .send({ content: "Admin trying to write note" });
+        .send({ content: "Admin internal note" });
 
-      expect(res.status).toBe(403);
+      expect(res.status).toBe(201);
+      expect(res.body.content).toBe("Admin internal note");
+      expect(res.body.author.role).toBe("ADMINISTRATOR");
     });
   });
 

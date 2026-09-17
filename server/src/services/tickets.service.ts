@@ -205,10 +205,6 @@ export class TicketService {
   }
 
   static async createComment(ticketId: number, user: { id: number; role: string }, content: string) {
-    if (user.role === "ADMINISTRATOR") {
-      throw new Error("FORBIDDEN_ADMIN");
-    }
-
     const prisma = getPrisma();
     const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
     if (!ticket) throw new Error("NOT_FOUND");

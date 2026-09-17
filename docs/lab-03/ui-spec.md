@@ -131,19 +131,19 @@ Application Shell ทำหน้าที่เป็นกรอบโคร�
 
 ---
 
-### 3.4 IT Staff Ticket Detail Screen
+### 3.4 IT Staff & Administrator Ticket Detail Screen
 
 - **โครงสร้าง:** แบ่งออกเป็น 2 คอลัมน์หลักบน Desktop (3:1) และเรียงต่อกันบน Mobile
 - **คอลัมน์ซ้าย (Ticket Information & Activity):**
   - **Ticket Summary & Description:** พื้นหลังสีขาว ข้อมูลอ่านได้อย่างเดียว (Read-only)
   - **Attachments Section:** แสดงรายการไฟล์แนบเดิมจาก Lab 2 พร้อมปุ่มดาวน์โหลด
   - **Activity & Discussion Tabs:**
-    - **Tab 1: Public Comments:** พื้นหลังขอบสีเขียวอ่อน แสดงข้อความพูดคุยระหว่าง Requester และเจ้าหน้าที่
-    - **Tab 2: Internal Notes:** พื้นหลังกล่องข้อความสีเหลืองอำพันอ่อน (`#FFFBEB`) ขอบสีส้มทอง พร้อมป้ายกำกับเด่นชัด `🔒 Internal Note - IT Staff Only` เพื่อป้องกันความสับสนไม่ให้เจ้าหน้าที่โพสต์ข้อมูลลับผิดช่องทาง
-- **คอลัมน์ขวา (Operational Controls - Editable by IT Staff):**
+    - **Tab 1: Public Comments:** พื้นหลังขอบสีเขียวอ่อน แสดงข้อความพูดคุยระหว่าง Requester, IT Staff, และ Administrator
+    - **Tab 2: Internal Notes:** พื้นหลังกล่องข้อความสีเหลืองอำพันอ่อน (`#FFFBEB`) ขอบสีส้มทอง พร้อมป้ายกำกับเด่นชัด `🔒 Internal Note - IT Staff & Admin Only` เพื่อป้องกันความสับสนไม่ให้โพสต์ข้อมูลลับผิดช่องทาง
+- **คอลัมน์ขวา (Operational Controls - Editable by IT Staff & Administrator):**
   - **Ticket Owner Control:**
     - แสดงชื่อเจ้าหน้าที่ปัจจุบัน หากยังไม่มีเจ้าหน้าที่รับผิดชอบ จะมีปุ่มเด่นชัด **"Claim Ticket"** (กดเพื่อกำหนดตนเองเป็นเจ้าของทันที)
-    - Dropdown รายชื่อ IT Staff ที่ Active เพื่อใช้โอนงาน (Reassign)
+    - Dropdown รายชื่อ IT Staff / Administrator ที่ Active เพื่อใช้โอนงาน (Reassign)
   - **IT Priority Control:** Dropdown เลือก Low, Medium, High, Critical (แยกต่างหากจาก Requested Priority ซึ่งเป็น Read-only)
   - **Current Status Control:** Dropdown ที่แสดงเฉพาะสถานะที่อนุญาตให้เปลี่ยนได้ตาม Status Transition Matrix พร้อมปุ่มบันทึกหรือบันทึกแบบอัตโนมัติ (Auto-save on change พร้อม Toast Feedback)
 

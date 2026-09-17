@@ -201,11 +201,11 @@ export class StaffTicketsService {
       throw new Error("INVALID_STAFF");
     }
 
-    // Verify staff exists and is active IT_STAFF
+    // Verify staff exists and is active IT_STAFF or ADMINISTRATOR (Lab 3 Sheet Section 4.5)
     const staff = await prisma.user.findFirst({
       where: {
         id: Number(assignedStaffId),
-        role: "IT_STAFF",
+        role: { in: ["IT_STAFF", "ADMINISTRATOR"] },
         isActive: true
       }
     });
@@ -351,7 +351,7 @@ export class StaffTicketsService {
   static async getActiveStaffList() {
     const prisma = getPrisma();
     return prisma.user.findMany({
-      where: { role: "IT_STAFF", isActive: true },
+      where: { role: { in: ["IT_STAFF", "ADMINISTRATOR"] }, isActive: true },
       select: { id: true, name: true, email: true },
       orderBy: { name: "asc" }
     });

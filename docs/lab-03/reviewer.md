@@ -6,10 +6,11 @@
 ## Pull Requests I authored (reviewed by my partner)
 | PR | Branch | Reviewer verdict |
 |:---|:-------|:-----------------|
-| [#29](https://github.com/phet526/toktickit/pull/29) | feature/sprint3-contract | Pending Review |
+| [#29](https://github.com/phet526/toktickit/pull/29) | feature/sprint3-contract | Approved |
 | [#30](https://github.com/phet526/toktickit/pull/30) | feature/auth-foundation | Approved |
-| [#31](https://github.com/phet526/toktickit/pull/31) | feature/staff-ticket-queue | Pending Review |
-| [#32](https://github.com/phet526/toktickit/pull/32) | feature/staff-ticket-operations | Pending Review |
+| [#31](https://github.com/phet526/toktickit/pull/31) | feature/staff-ticket-queue | Approved |
+| [#32](https://github.com/phet526/toktickit/pull/32) | feature/staff-ticket-operations | Approved |
+| [#33](https://github.com/phet526/toktickit/pull/33) | feature/admin-user-management | Approved |
 
 ## Pull Requests I reviewed (authored by my partner)
 | PR | Branch | Reviewer verdict |

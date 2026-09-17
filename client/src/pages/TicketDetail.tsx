@@ -826,44 +826,38 @@ export default function TicketDetail() {
                     </div>
                   )}
 
-                  {/* Post Comment Form (Disabled for Admin as per BR-09, BR-10) */}
-                  {user?.role !== "ADMINISTRATOR" ? (
-                    <form onSubmit={handleSubmitComment} className="mt-3">
-                      <div className="mb-2">
-                        <label htmlFor="publicCommentInput" className="form-label small fw-semibold text-secondary">
-                          Add a public comment
-                        </label>
-                        <textarea
-                          id="publicCommentInput"
-                          className="form-control"
-                          rows={3}
-                          placeholder="Type your message here (up to 1,000 characters)..."
-                          value={commentInput}
-                          onChange={(e) => setCommentInput(e.target.value)}
-                          maxLength={1000}
-                          required
-                          style={{ borderRadius: "8px", borderColor: "#D1D5DB" }}
-                        ></textarea>
-                        <div className="d-flex justify-content-between small text-muted mt-1">
-                          <span>Markdown formatting supported</span>
-                          <span>{commentInput.length} / 1000</span>
-                        </div>
+                  {/* Post Comment Form */}
+                  <form onSubmit={handleSubmitComment} className="mt-3">
+                    <div className="mb-2">
+                      <label htmlFor="publicCommentInput" className="form-label small fw-semibold text-secondary">
+                        Add a public comment
+                      </label>
+                      <textarea
+                        id="publicCommentInput"
+                        className="form-control"
+                        rows={3}
+                        placeholder="Type your message here (up to 1,000 characters)..."
+                        value={commentInput}
+                        onChange={(e) => setCommentInput(e.target.value)}
+                        maxLength={1000}
+                        required
+                        style={{ borderRadius: "8px", borderColor: "#D1D5DB" }}
+                      ></textarea>
+                      <div className="d-flex justify-content-between small text-muted mt-1">
+                        <span>Markdown formatting supported</span>
+                        <span>{commentInput.length} / 1000</span>
                       </div>
-                      <button
-                        type="submit"
-                        id="btnSubmitComment"
-                        disabled={submittingComment || !commentInput.trim()}
-                        className="btn text-white fw-semibold px-3 py-2"
-                        style={{ backgroundColor: "#006B3C", borderRadius: "8px" }}
-                      >
-                        {submittingComment ? "Posting..." : "Post Comment"}
-                      </button>
-                    </form>
-                  ) : (
-                    <div className="alert alert-secondary small mb-0 mt-3" style={{ borderRadius: "8px" }}>
-                      <em>Administrators have view-only access to public comments.</em>
                     </div>
-                  )}
+                    <button
+                      type="submit"
+                      id="btnSubmitComment"
+                      disabled={submittingComment || !commentInput.trim()}
+                      className="btn text-white fw-semibold px-3 py-2"
+                      style={{ backgroundColor: "#006B3C", borderRadius: "8px" }}
+                    >
+                      {submittingComment ? "Posting..." : "Post Comment"}
+                    </button>
+                  </form>
                 </div>
               )}
 
@@ -910,7 +904,10 @@ export default function TicketDetail() {
                           <div className="d-flex align-items-center justify-content-between mb-2">
                             <div className="d-flex align-items-center gap-2">
                               <span className="fw-semibold text-dark">👤 {n.author?.name}</span>
-                              <span className="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill small">
+                              <span
+                                className="badge rounded-pill"
+                                style={{ ...getRoleBadgeStyle(n.author?.role), fontSize: "0.7rem", fontWeight: 600 }}
+                              >
                                 {n.author?.role}
                               </span>
                             </div>
@@ -924,8 +921,8 @@ export default function TicketDetail() {
                     </div>
                   )}
 
-                  {/* Add Note Form (Only IT_STAFF can create notes per BR-09, BR-11) */}
-                  {isOnlyStaff ? (
+                  {/* Add Note Form (IT_STAFF and ADMINISTRATOR) */}
+                  {isStaff && (
                     <form onSubmit={handleSubmitNote} className="mt-3">
                       <div className="mb-2">
                         <label htmlFor="internalNoteInput" className="form-label small fw-semibold text-secondary">
@@ -957,10 +954,6 @@ export default function TicketDetail() {
                         {submittingNote ? "Saving..." : "Add Internal Note"}
                       </button>
                     </form>
-                  ) : (
-                    <div className="alert alert-secondary small mb-0 mt-3" style={{ borderRadius: "8px" }}>
-                      <em>Administrators have view-only access to internal notes.</em>
-                    </div>
                   )}
                 </div>
               )}
@@ -982,21 +975,6 @@ export default function TicketDetail() {
               </div>
 
               <div className="card-body p-3 p-md-4">
-                {isAdmin && (
-                  <div
-                    className="alert alert-info py-2 px-3 small mb-3 d-flex align-items-center gap-2 border-0"
-                    style={{ backgroundColor: "#EBF5FF", color: "#1E429F", borderRadius: "8px" }}
-                  >
-                    <span>🛡️</span>
-                    <div>
-                      <strong>Administrator Mode:</strong>
-                      <div className="small text-muted mt-0">
-                        View-only access. Ticket operations (Claim, Reassign, Priority, Status) are restricted to IT Staff (BR-09).
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 {/* 1. Ticket Ownership Control */}
                 <div className="mb-4 pb-3 border-bottom">
                   <label className="form-label small fw-bold text-dark d-flex justify-content-between">
@@ -1019,18 +997,16 @@ export default function TicketDetail() {
                       <div className="badge bg-light text-muted border border-dashed py-2 px-3 w-100 mb-2 text-center fs-6">
                         Unassigned Ticket
                       </div>
-                      {!isAdmin && (
-                        <button
-                          type="button"
-                          id="btnClaimTicket"
-                          disabled={updatingOwner}
-                          onClick={handleClaim}
-                          className="btn w-100 text-white fw-semibold py-2"
-                          style={{ backgroundColor: "#006B3C", borderRadius: "8px" }}
-                        >
-                          {updatingOwner ? "Claiming..." : "⚡ Claim Ticket (Assign to Me)"}
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        id="btnClaimTicket"
+                        disabled={updatingOwner}
+                        onClick={handleClaim}
+                        className="btn w-100 text-white fw-semibold py-2"
+                        style={{ backgroundColor: "#006B3C", borderRadius: "8px" }}
+                      >
+                        {updatingOwner ? "Claiming..." : "⚡ Claim Ticket (Assign to Me)"}
+                      </button>
                     </div>
                   )}
 
@@ -1052,9 +1028,9 @@ export default function TicketDetail() {
                             handleReassign(Number(val));
                           }
                         }}
-                        disabled={updatingOwner || isAdmin}
+                        disabled={updatingOwner}
                       >
-                        <option value="">Select IT Staff...</option>
+                        <option value="">Select IT Staff / Admin...</option>
                         {activeStaffList.map((s) => (
                           <option key={s.id} value={s.id}>
                             {s.name} {user?.id === s.id ? "(You)" : ""}
@@ -1062,9 +1038,6 @@ export default function TicketDetail() {
                         ))}
                       </select>
                     </div>
-                    {isAdmin && (
-                      <div className="form-text small text-muted mt-1">Reassignment is restricted to IT Staff.</div>
-                    )}
                   </div>
                 </div>
 
@@ -1087,7 +1060,7 @@ export default function TicketDetail() {
                     style={{ borderRadius: "8px", borderColor: "#D1D5DB" }}
                     value={ticket.itPriority || ticket.requestedPriority}
                     onChange={(e) => handlePriorityChange(e.target.value)}
-                    disabled={updatingPriority || isAdmin}
+                    disabled={updatingPriority}
                   >
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
@@ -1095,13 +1068,7 @@ export default function TicketDetail() {
                     <option value="Critical">Critical</option>
                   </select>
                   <div className="form-text small text-muted mt-1">
-                    {isAdmin ? (
-                      "Priority changes are restricted to IT Staff."
-                    ) : (
-                      <>
-                        Requested priority remains: <strong>{ticket.requestedPriority}</strong>
-                      </>
-                    )}
+                    Requested priority remains: <strong>{ticket.requestedPriority}</strong>
                   </div>
                 </div>
 
@@ -1119,11 +1086,7 @@ export default function TicketDetail() {
                     </span>
                   </div>
 
-                  {isAdmin ? (
-                    <div className="p-2 bg-light rounded text-muted small">
-                      <em>Status updates are restricted to IT Staff. Allowed transitions: {ticket.permittedStatusTransitions?.join(", ") || "None"}</em>
-                    </div>
-                  ) : ticket.permittedStatusTransitions && ticket.permittedStatusTransitions.length > 0 ? (
+                  {ticket.permittedStatusTransitions && ticket.permittedStatusTransitions.length > 0 ? (
                     <div>
                       <select
                         id="selectTicketStatus"

@@ -317,7 +317,7 @@ export class TicketController {
         res.status(404).json({ error: "Ticket not found" });
         return;
       }
-      if (error.message === "FORBIDDEN" || error.message === "FORBIDDEN_ADMIN") {
+      if (error.message === "FORBIDDEN") {
         res.status(403).json({ error: "Forbidden: You do not have permission to comment on this ticket" });
         return;
       }

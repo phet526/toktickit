@@ -166,14 +166,14 @@ Stakeholder ต้องการนำระบบเข้าสู่สภ�
 | **Requester: Upload/Delete Attachment** | ✅ (Own ticket) | ❌ (Forbidden) | ❌ | ❌ | ❌ (401) |
 | **Requester: Indicate Problem Resolved** | ✅ (Own ticket) | ❌ (Forbidden) | ❌ | ❌ | ❌ (401) |
 | **Public Comments: View** | ✅ (Own ticket) | ❌ (Forbidden) | ✅ (All tickets) | ✅ (All tickets) | ❌ (401) |
-| **Public Comments: Create** | ✅ (Own ticket) | ❌ (Forbidden) | ✅ (All tickets) | ❌ (403 Forbidden) | ❌ (401) |
+| **Public Comments: Create** | ✅ (Own ticket) | ❌ (Forbidden) | ✅ (All tickets) | ✅ (All tickets) | ❌ (401) |
 | **Internal Notes: View** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ (All tickets) | ✅ (All tickets) | ❌ (401) |
-| **Internal Notes: Create** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ (All tickets) | ❌ (403 Forbidden) | ❌ (401) |
-| **IT Queue: View / Search / Filter** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ | ❌ (403 Forbidden) | ❌ (401) |
-| **IT Ticket: View Detail** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ | ❌ (403 Forbidden) | ❌ (401) |
-| **IT Ticket: Claim / Reassign Owner** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ | ❌ (403 Forbidden) | ❌ (401) |
-| **IT Ticket: Update IT Priority** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ | ❌ (403 Forbidden) | ❌ (401) |
-| **IT Ticket: Update Ticket Status** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ (ตาม Matrix) | ❌ (403 Forbidden) | ❌ (401) |
+| **Internal Notes: Create** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ (All tickets) | ✅ (All tickets) | ❌ (401) |
+| **IT Queue: View / Search / Filter** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ | ✅ | ❌ (401) |
+| **IT Ticket: View Detail** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ | ✅ | ❌ (401) |
+| **IT Ticket: Claim / Reassign Owner** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ | ✅ | ❌ (401) |
+| **IT Ticket: Update IT Priority** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ | ✅ | ❌ (401) |
+| **IT Ticket: Update Ticket Status** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ (ตาม Matrix) | ✅ (ตาม Matrix) | ❌ (401) |
 | **Admin: View User List** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ | ❌ (401) |
 | **Admin: Create User** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ | ❌ (401) |
 | **Admin: Edit User Profile / Role** | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ❌ (403 Forbidden) | ✅ | ❌ (401) |
@@ -377,9 +377,9 @@ model InternalNote {
 
 ### Comments & Notes Endpoints
 - `GET /api/v1/tickets/:id/comments`: ดึงรายการ Public Comments (อนุญาต: Requester เจ้าของตั๋ว, IT Staff, Administrator)
-- `POST /api/v1/tickets/:id/comments`: สร้าง Public Comment ใหม่ (อนุญาต: Requester เจ้าของตั๋ว, IT Staff)
+- `POST /api/v1/tickets/:id/comments`: สร้าง Public Comment ใหม่ (อนุญาต: Requester เจ้าของตั๋ว, IT Staff, Administrator)
 - `GET /api/v1/staff/tickets/:id/notes`: ดึงรายการ Internal Notes (อนุญาต: IT Staff, Administrator - Requester ห้ามเข้าถึง)
-- `POST /api/v1/staff/tickets/:id/notes`: สร้าง Internal Note ใหม่ (อนุญาต: IT Staff เท่านั้น)
+- `POST /api/v1/staff/tickets/:id/notes`: สร้าง Internal Note ใหม่ (อนุญาต: IT Staff, Administrator - Requester ห้ามเข้าถึง)
 
 ### Administrator User Management Endpoints
 - `GET /api/v1/admin/users`: ดึงรายชื่อผู้ใช้ทั้งหมด (Query: search, role)
@@ -435,6 +435,6 @@ model InternalNote {
 1. **Authentication Mechanism:** เลือกใช้ Signed HTTP-only Cookie เก็บ JWT Token เพื่อความปลอดภัยสูงสุดในการป้องกันการโจรกรรมโทเคนผ่าน XSS และป้องกันปัญหาการจัดการโทเคนฝั่ง Client
 2. **Password Hashing:** เลือกใช้ไลบรารี `bcrypt` (หรือ `bcryptjs`) ที่มี Salt Round มาตรฐาน (Cost factor 10)
 3. **Default Initial Password Policy:** ผู้ใช้ใหม่หรือบัญชีเดิมที่ถูก Migrate จะได้รับ Initial Password รูปแบบ `Toktick2026!` สำหรับ Local Development โดยมีแฟล็ก `mustChangePassword = true` กำกับเสมอ
-4. **Admin vs IT Staff Separation:** Administrator มีหน้าที่เฉพาะ User Management เท่านั้น และไม่ได้รับอนุญาตให้จัดการตั๋วหรือบันทึกข้อมูลในคิวงานของ IT Staff
+4. **Admin Operational Privileges:** เพื่อให้สอดคล้องกับข้อกำหนด Lab 3 Sheet ข้อ 4.5 และคำแนะนำของผู้สอน/TA ทาง Administrator มีอำนาจระดับ Superuser สามารถเข้าถึงและปฏิบัติการงานตั๋วของ IT Staff ได้ครบถ้วน (Claim, Reassign, Update Priority, Update Status, Post Comments, และ Create Internal Notes) ควบคู่กับหน้าที่หลักในการบริหารจัดการผู้ใช้ (User Management)
 5. **Pagination Defaults:** หน้ารายการ Ticket Queue กำหนดค่าเริ่มต้นการแบ่งหน้าที่ 10 รายการต่อหน้า (Default Limit = 10)
 6. **Safe Error Responses:** ในการร้องขอที่ไม่ได้รับสิทธิ์ หรือการพยายามเข้าถึงทรัพยากรที่ตนเองไม่ใช่เจ้าของ ระบบจะตอบกลับด้วย HTTP 403 Forbidden หรือ 404 Not Found ในรูปแบบ JSON มาตรฐานที่มีโครงสร้างสม่ำเสมอ โดยไม่เปิดเผยข้อมูลความลับหรือ Stack trace

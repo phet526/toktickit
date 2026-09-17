@@ -174,14 +174,14 @@ describe("Lab 3 — Staff Ticket Detail & Operations Tests (UNIT-02, API-12, API
       expect(res.status).toBe(403);
     });
 
-    it("should block Administrator from claiming ticket with HTTP 403 (BR-09)", async () => {
+    it("should allow Administrator to claim ticket with HTTP 200 (Superuser)", async () => {
       const res = await request(app)
         .patch(`/api/v1/staff/tickets/${testTicketId}/ownership`)
         .set("Cookie", adminCookie)
         .send({ assignedStaffId: staffUserId });
 
-      expect(res.status).toBe(403);
-      expect(res.body.code).toBe("FORBIDDEN");
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe("Ticket ownership updated successfully");
     });
   });
 
@@ -212,14 +212,14 @@ describe("Lab 3 — Staff Ticket Detail & Operations Tests (UNIT-02, API-12, API
       expect(res.body.error).toContain("active IT Staff");
     });
 
-    it("should block Administrator from reassigning ticket with HTTP 403 (BR-09)", async () => {
+    it("should allow Administrator to reassign ticket with HTTP 200 (Superuser)", async () => {
       const res = await request(app)
         .patch(`/api/v1/staff/tickets/${testTicketId}/ownership`)
         .set("Cookie", adminCookie)
         .send({ assignedStaffId: anotherStaffId });
 
-      expect(res.status).toBe(403);
-      expect(res.body.code).toBe("FORBIDDEN");
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe("Ticket ownership updated successfully");
     });
   });
 
@@ -259,14 +259,14 @@ describe("Lab 3 — Staff Ticket Detail & Operations Tests (UNIT-02, API-12, API
       expect(res.status).toBe(403);
     });
 
-    it("should block Administrator from updating IT priority with HTTP 403 (BR-09)", async () => {
+    it("should allow Administrator to update IT priority with HTTP 200 (Superuser)", async () => {
       const res = await request(app)
         .patch(`/api/v1/staff/tickets/${testTicketId}/priority`)
         .set("Cookie", adminCookie)
-        .send({ itPriority: "Low" });
+        .send({ itPriority: "Critical" });
 
-      expect(res.status).toBe(403);
-      expect(res.body.code).toBe("FORBIDDEN");
+      expect(res.status).toBe(200);
+      expect(res.body.itPriority).toBe("Critical");
     });
   });
 
@@ -321,14 +321,30 @@ describe("Lab 3 — Staff Ticket Detail & Operations Tests (UNIT-02, API-12, API
       expect(res.status).toBe(403);
     });
 
-    it("should block Administrator from updating ticket status with HTTP 403 (BR-09)", async () => {
-      const res = await request(app)
-        .patch(`/api/v1/staff/tickets/${testTicketId}/status`)
-        .set("Cookie", adminCookie)
-        .send({ status: "Closed" });
+    it("should allow Administrator to update ticket status with HTTP 200 (Superuser)", async () => {
+      const category = await prisma.category.findFirstOrThrow();
+      const system = await prisma.relatedSystem.findFirstOrThrow();
+      const requester = await prisma.user.findFirstOrThrow({ where: { role: "REQUESTER" } });
+      const adminTestTicket = await prisma.ticket.create({
+        data: {
+          ticketNo: `TKT-ADMIN-${Date.now().toString().slice(-5)}`,
+          summary: "Admin Status Test Ticket",
+          description: "Testing admin status update",
+          requestedPriority: "Medium",
+          currentStatus: "New",
+          requesterId: requester.id,
+          categoryId: category.id,
+          relatedSystemId: system.id
+        }
+      });
 
-      expect(res.status).toBe(403);
-      expect(res.body.code).toBe("FORBIDDEN");
+      const res = await request(app)
+        .patch(`/api/v1/staff/tickets/${adminTestTicket.id}/status`)
+        .set("Cookie", adminCookie)
+        .send({ status: "Open" });
+
+      expect(res.status).toBe(200);
+      expect(res.body.currentStatus).toBe("Open");
     });
   });
 
