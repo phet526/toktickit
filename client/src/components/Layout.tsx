@@ -15,11 +15,12 @@ export default function Layout({ requesterName, onLogout }: LayoutProps) {
   const displayName = requesterName || currentUser?.name || "User";
   const role = currentUser?.role || "REQUESTER";
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     if (onLogout) {
       onLogout();
     } else {
-      auth.logout();
+      await auth.logout();
+      window.location.href = "/";
     }
   };
 

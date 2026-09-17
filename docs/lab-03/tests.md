@@ -129,6 +129,11 @@ npx playwright test
   - `tests/lab-03/UserManagement.test.tsx` (9 tests)
   - `tests/lab-03/StaffTicketDetail.test.tsx` (10 tests)
   - `tests/lab-03/StaffTicketQueue.test.tsx` (8 tests)
-- **Total Test Suite Summary:** **149 / 149 Tests Passed (100% Pass Rate, 0 Failures, 0 Regression)**
+- **Playwright End-to-End (E2E) Tests:** **10 / 10 Passed (100%)**
+  - `e2e/lab-02/requester-ticket-flow.spec.ts` (2 tests: E2E-01 Desktop & Mobile Viewport)
+  - `e2e/lab-03/authentication.spec.ts` (3 tests: E2E-01, E2E-02, Mobile Viewport Check)
+  - `e2e/lab-03/staff-ticket-flow.spec.ts` (3 tests: E2E-03, E2E-05, Mobile Viewport Check)
+  - `e2e/lab-03/user-administration.spec.ts` (2 tests: E2E-04, Mobile Viewport Check)
+- **Grand Total Automated Tests:** **159 / 159 Tests Passed (100% Pass Rate across Server, Client, and E2E, 0 Failures, 0 Regression)**
 - **Status:** **All Planned Tests Implemented & Verified Successfully.**
 

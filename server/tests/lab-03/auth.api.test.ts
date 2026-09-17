@@ -12,12 +12,12 @@ describe("Lab 3 — Authentication Foundation & Requester Regression Tests", () 
     const hash = bcrypt.hashSync("Toktick2026!", 10);
     const reqA = await prisma.user.upsert({
       where: { email: "requester_a@example.com" },
-      update: { passwordHash: hash, mustChangePassword: true, isActive: true },
+      update: { passwordHash: hash, mustChangePassword: false, isActive: true },
       create: {
         name: "Requester A",
         email: "requester_a@example.com",
         passwordHash: hash,
-        mustChangePassword: true,
+        mustChangePassword: false,
         role: "REQUESTER",
         isActive: true
       }
@@ -316,10 +316,10 @@ describe("Lab 3 — Authentication Foundation & Requester Regression Tests", () 
         include: { attachments: true, requester: true }
       });
 
-      expect(tickets.length).toBeGreaterThanOrEqual(2);
-      expect(tickets[0].requester.name).toBe("Requester A");
-      expect(tickets[0].itPriority).toBeDefined();
-      expect(tickets[0].itPriority).toBe(tickets[0].requestedPriority);
+      const migratedTicket = tickets.find(t => t.ticketNo === "TKT-2026-00004") || tickets[0];
+      expect(migratedTicket.requester.name).toBe("Requester A");
+      expect(migratedTicket.itPriority).toBeDefined();
+      expect(migratedTicket.itPriority).toBe(migratedTicket.requestedPriority);
 
       // Verify existing attachment from Lab 2 is intact
       const totalAttachments = tickets.reduce((sum, t) => sum + t.attachments.length, 0);

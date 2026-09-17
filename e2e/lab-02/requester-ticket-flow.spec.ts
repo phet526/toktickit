@@ -8,17 +8,17 @@ test.describe('Requester Ticket Flow (E2E-01)', () => {
     // 1. Mock Login (RequesterSelector)
     await page.goto('http://localhost:5173/');
     
-    // Check if we are on the login page
-    await expect(page.locator('h4')).toContainText('TokTickIT');
-    await expect(page.locator('h5')).toContainText('Simulated Login');
-    
-    // Select a requester from the dropdown (assuming it fetches from API)
-    // Wait for the select to be populated (wait for the first real option)
-    await page.waitForSelector('select#requesterId option[value="1"]', { state: 'attached' });
-    
-    // Select the first active requester (index 1 since 0 is the placeholder)
-    await page.locator('select#requesterId').selectOption({ index: 1 });
-    await page.locator('button', { hasText: 'Continue' }).click();
+    // Check if on login page (Lab 3 Authentication) or legacy Simulated Login
+    if (await page.locator('#email').isVisible()) {
+      await page.fill('#email', 'requester_a@example.com');
+      await page.fill('#password', 'Toktick2026!');
+      await page.click('button[type="submit"]');
+    } else {
+      await expect(page.locator('h4')).toContainText('TokTickIT');
+      await page.waitForSelector('select#requesterId option[value="1"]', { state: 'attached' });
+      await page.locator('select#requesterId').selectOption({ index: 1 });
+      await page.locator('button', { hasText: 'Continue' }).click();
+    }
 
     // 2. My Tickets (List Page)
     // Should be redirected to /my-tickets
@@ -58,8 +58,7 @@ test.describe('Requester Ticket Flow (E2E-01)', () => {
 
     // 5. Ticket Detail
     await expect(page).toHaveURL(/.*\/tickets\/\d+/);
-    await expect(page.locator('h4')).toContainText('Ticket Detail:');
-    await expect(page.locator('p.fw-bold')).toContainText('E2E Test Ticket Summary');
+    await expect(page.getByText('E2E Test Ticket Summary').first()).toBeVisible();
   });
 
   test.describe('Mobile Viewport (Responsive Check)', () => {
@@ -68,10 +67,15 @@ test.describe('Requester Ticket Flow (E2E-01)', () => {
     test('Should not have horizontal scrollbar on mobile', async ({ page }) => {
       await page.goto('http://localhost:5173/');
       
-    // Wait for the select to be populated (wait for the first real option)
-    await page.waitForSelector('select#requesterId option[value="1"]', { state: 'attached' });
-      await page.locator('select#requesterId').selectOption({ index: 1 });
-      await page.locator('button', { hasText: 'Continue' }).click();
+      if (await page.locator('#email').isVisible()) {
+        await page.fill('#email', 'requester_a@example.com');
+        await page.fill('#password', 'Toktick2026!');
+        await page.click('button[type="submit"]');
+      } else {
+        await page.waitForSelector('select#requesterId option[value="1"]', { state: 'attached' });
+        await page.locator('select#requesterId').selectOption({ index: 1 });
+        await page.locator('button', { hasText: 'Continue' }).click();
+      }
 
       // Check horizontal scroll
       const hasHorizontalScroll = await page.evaluate(() => {

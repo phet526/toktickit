@@ -42,10 +42,16 @@ function AppRoutes() {
     if (isMock) {
       return <RequesterSelector onLogin={(id, name) => login(`${name.toLowerCase().replace(/\s+/g, ".")}@toktickit.com`, "Toktick2026!")} />;
     }
+    if (typeof window !== "undefined" && window.location.pathname !== "/" && window.location.pathname !== "/login") {
+      window.history.replaceState(null, "", "/");
+    }
     return <Login />;
   }
 
   if (user.mustChangePassword) {
+    if (typeof window !== "undefined" && window.location.pathname !== "/change-password") {
+      window.history.replaceState(null, "", "/change-password");
+    }
     return <ChangePassword />;
   }
 
