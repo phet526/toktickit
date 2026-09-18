@@ -1,14 +1,23 @@
 # dependencies
 node_modules/
+
 # env & secrets
 .env
+.env.local
 *.env
 !.env.example
+
 # build output
 dist/
 build/
+
+# test results & reports
+playwright-report/
+test-results/
+
 # prisma
 server/prisma/*.db
+
 # logs & OS
 *.log
 .DS_Store
