@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import multer from "multer";
 import { TicketController } from "../controllers/tickets.controller.js";
+import { requireAuth } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
@@ -42,5 +43,12 @@ router.delete("/:id/attachments/:attachmentId", TicketController.deleteAttachmen
 
 // GET /api/v1/tickets/:id/attachments/:attachmentId/download
 router.get("/:id/attachments/:attachmentId/download", TicketController.downloadAttachment);
+
+// Public Comments
+router.get("/:id/comments", requireAuth, TicketController.getComments);
+router.post("/:id/comments", requireAuth, TicketController.createComment);
+
+// Indicate Problem Appears Resolved
+router.post("/:id/resolve-indication", requireAuth, TicketController.indicateProblemResolved);
 
 export default router;

@@ -1,0 +1,20 @@
+# Lab 3 — Peer Review Record
+
+**Author:** นายพชร มัสมี — 67070501066 — GitHub: @phet526  
+**Peer reviewer:** นายวัทธิกร ศรีประดับทอง — 67070501073 — GitHub: @ILoveSiesta  
+
+## Pull Requests I authored (reviewed by my partner)
+| PR | Branch | Reviewer verdict |
+|:---|:-------|:-----------------|
+| [#29](https://github.com/phet526/toktickit/pull/29) | feature/sprint3-contract | Approved |
+| [#30](https://github.com/phet526/toktickit/pull/30) | feature/auth-foundation | Approved |
+| [#31](https://github.com/phet526/toktickit/pull/31) | feature/staff-ticket-queue | Approved |
+| [#32](https://github.com/phet526/toktickit/pull/32) | feature/staff-ticket-operations | Approved |
+| [#33](https://github.com/phet526/toktickit/pull/33) | feature/admin-user-management | Approved |
+| [#35](https://github.com/phet526/toktickit/pull/35) | release/lab-03-integration | Approved |
+| [#36](https://github.com/phet526/toktickit/pull/36) | docs/spec-alignment | Approved |
+
+## Pull Requests I reviewed (authored by my partner)
+| PR | Branch | Reviewer verdict |
+|----|--------|------------------|
+| | | |

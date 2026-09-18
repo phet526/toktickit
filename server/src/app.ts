@@ -2,6 +2,12 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import { getPrisma } from "./prisma.js";
 import ticketsRouter from "./routes/tickets.router.js";
+import cookieParser from "cookie-parser";
+import authRouter from "./routes/auth.router.js";
+import staffTicketsRouter from "./routes/staff-tickets.router.js";
+import adminUsersRouter from "./routes/admin-users.router.js";
+import { requireAuth, requireRole } from "./middlewares/auth.middleware.js";
+import { getActiveStaffList } from "./controllers/staff-tickets.controller.js";
 // getPrisma() is your lazy database handle. Call it INSIDE a route when you
 // need the DB (Issue 4). It is intentionally unused until then.
 void getPrisma;
@@ -10,11 +16,15 @@ void getPrisma;
 // Supertest can import `app` without opening a port. Do not merge these files.
 export const app = express();
 
-app.use(cors());          // already wired: lets the Vite dev server call this API
+app.use(cors({ origin: true, credentials: true })); // credentials for cookie support
 app.use(express.json());
+app.use(cookieParser());
 
-// Mount the tickets router for Issue 12
+// Mount routers
+app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/tickets", ticketsRouter);
+app.use("/api/v1/staff/tickets", staffTicketsRouter);
+app.use("/api/v1/admin/users", adminUsersRouter);
 
 // ---------------------------------------------------------------------------
 // Issue 2 — API health check
@@ -56,6 +66,24 @@ app.get("/api/categories", async (_req: Request, res: Response) => {
   }
 });
 
+// GET /api/v1/categories
+app.get("/api/v1/categories", async (_req: Request, res: Response) => {
+  try {
+    const prisma = getPrisma();
+    const categories = await prisma.category.findMany({
+      select: { id: true, name: true },
+      orderBy: { id: "asc" }
+    });
+    res.status(200).json(categories);
+  } catch (error) {
+    console.error("Error fetching categories v1:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// GET /api/v1/staff/active (for Claim / Reassign dropdown)
+app.get("/api/v1/staff/active", requireAuth, requireRole("IT_STAFF", "ADMINISTRATOR"), getActiveStaffList);
+
 // GET /api/v1/related-systems for Ticket Creation form dropdown
 app.get("/api/v1/related-systems", async (_req: Request, res: Response) => {
   try {
@@ -75,8 +103,8 @@ app.get("/api/v1/related-systems", async (_req: Request, res: Response) => {
 app.get("/api/v1/requesters/active", async (_req: Request, res: Response) => {
   try {
     const prisma = getPrisma();
-    const requesters = await prisma.developmentRequester.findMany({
-      where: { isActive: true },
+    const requesters = await prisma.user.findMany({
+      where: { isActive: true, role: "REQUESTER" },
       select: { id: true, name: true },
       orderBy: { id: 'asc' },
     });

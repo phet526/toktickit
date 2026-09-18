@@ -29,7 +29,7 @@ export class TicketService {
 
     // 2. Foreign Key Validations
     const [requester, category, relatedSystem] = await Promise.all([
-      prisma.developmentRequester.findUnique({ where: { id: data.requesterId } }),
+      prisma.user.findUnique({ where: { id: data.requesterId } }),
       prisma.category.findUnique({ where: { id: data.categoryId } }),
       prisma.relatedSystem.findUnique({ where: { id: data.relatedSystemId } })
     ]);
@@ -41,13 +41,14 @@ export class TicketService {
     // 3. Generate Ticket No
     const ticketNo = await generateTicketNumber();
 
-    // 4. Create Ticket (BR-02: Status = "New")
+    // 4. Create Ticket (BR-02: Status = "New", BR-14: itPriority copies requestedPriority)
     const newTicket = await prisma.ticket.create({
       data: {
         ticketNo,
         summary: data.summary,
         description: data.description,
         requestedPriority: data.requestedPriority,
+        itPriority: data.requestedPriority,
         currentStatus: "New",
         requesterId: data.requesterId,
         categoryId: data.categoryId,
@@ -172,5 +173,117 @@ export class TicketService {
     });
 
     return { success: true };
+  }
+
+  static async getComments(ticketId: number, user: { id: number; role: string }) {
+    const prisma = getPrisma();
+    const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+    if (!ticket) throw new Error("NOT_FOUND");
+
+    if (user.role === "REQUESTER" && ticket.requesterId !== user.id) {
+      throw new Error("FORBIDDEN");
+    }
+
+    const comments = await prisma.comment.findMany({
+      where: { ticketId },
+      orderBy: { createdAt: "asc" },
+      include: {
+        author: { select: { id: true, name: true, role: true } }
+      }
+    });
+
+    return comments.map((c) => ({
+      id: c.id,
+      content: c.content,
+      author: {
+        id: c.author.id,
+        name: c.author.name,
+        role: c.author.role
+      },
+      createdAt: c.createdAt.toISOString()
+    }));
+  }
+
+  static async createComment(ticketId: number, user: { id: number; role: string }, content: string) {
+    const prisma = getPrisma();
+    const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+    if (!ticket) throw new Error("NOT_FOUND");
+
+    if (user.role === "REQUESTER" && ticket.requesterId !== user.id) {
+      throw new Error("FORBIDDEN");
+    }
+
+    if (!content || !content.trim()) {
+      throw new Error("EMPTY_CONTENT");
+    }
+
+    if (content.trim().length > 1000) {
+      throw new Error("CONTENT_TOO_LONG");
+    }
+
+    const comment = await prisma.comment.create({
+      data: {
+        ticketId,
+        authorId: user.id,
+        content: content.trim()
+      },
+      include: {
+        author: { select: { id: true, name: true, role: true } }
+      }
+    });
+
+    return {
+      id: comment.id,
+      content: comment.content,
+      author: {
+        id: comment.author.id,
+        name: comment.author.name,
+        role: comment.author.role
+      },
+      createdAt: comment.createdAt.toISOString()
+    };
+  }
+
+  static async indicateProblemResolved(ticketId: number, user: { id: number; role: string }) {
+    if (user.role !== "REQUESTER") {
+      throw new Error("FORBIDDEN");
+    }
+
+    const prisma = getPrisma();
+    const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+    if (!ticket) throw new Error("NOT_FOUND");
+
+    if (ticket.requesterId !== user.id) {
+      throw new Error("FORBIDDEN");
+    }
+
+    const validStatuses = ["Open", "In Progress", "Waiting for Requester"];
+    const statusMatch = validStatuses.some(
+      (s) => s.toLowerCase() === ticket.currentStatus.toLowerCase()
+    );
+
+    if (!statusMatch) {
+      throw new Error("INVALID_STATUS");
+    }
+
+    // Set flag and auto-create Public Comment
+    await prisma.$transaction([
+      prisma.ticket.update({
+        where: { id: ticketId },
+        data: { problemResolvedReported: true }
+      }),
+      prisma.comment.create({
+        data: {
+          ticketId,
+          authorId: user.id,
+          content: "[Requester Update] The requester indicated that the problem appears resolved."
+        }
+      })
+    ]);
+
+    return {
+      message: "Problem resolution indicated successfully",
+      problemResolvedReported: true
+    };
   }
 }
