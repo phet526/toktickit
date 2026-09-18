@@ -590,7 +590,7 @@ export default function StaffTicketQueue() {
                 <span className="fw-semibold text-dark">{meta.totalItems}</span> tickets
               </div>
 
-              <div className="d-flex align-items-center gap-1">
+              <div className="d-flex flex-wrap justify-content-center align-items-center gap-1">
                 <button
                   className="btn btn-outline-secondary btn-sm px-3"
                   style={{ borderRadius: "6px", minHeight: "36px" }}

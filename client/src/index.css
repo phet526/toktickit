@@ -1,5 +1,10 @@
 /* Zen Green Theme Global Styles */
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   background-color: #F5F7F6;
   color: #2A3B32; /* Dark charcoal-green for text */

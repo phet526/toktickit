@@ -60,16 +60,17 @@ async function main() {
 
   const userMap = new Map<string, number>();
   for (const r of requestersData) {
+    const isFirstTimeUser = r.email === "requester_e@example.com";
     const user = await prisma.user.upsert({
       where: { email: r.email },
-      update: { name: r.name, isActive: r.isActive },
+      update: { name: r.name, isActive: r.isActive, mustChangePassword: isFirstTimeUser, passwordHash: DEFAULT_PASSWORD_HASH },
       create: {
         name: r.name,
         email: r.email,
         passwordHash: DEFAULT_PASSWORD_HASH,
         role: Role.REQUESTER,
         isActive: r.isActive,
-        mustChangePassword: true
+        mustChangePassword: isFirstTimeUser
       }
     });
     userMap.set(r.email, user.id);
@@ -87,7 +88,7 @@ async function main() {
   for (const s of staffData) {
     const user = await prisma.user.upsert({
       where: { email: s.email },
-      update: { name: s.name, isActive: s.isActive, role: Role.IT_STAFF },
+      update: { name: s.name, isActive: s.isActive, role: Role.IT_STAFF, passwordHash: DEFAULT_PASSWORD_HASH, mustChangePassword: false },
       create: {
         name: s.name,
         email: s.email,
@@ -110,7 +111,7 @@ async function main() {
   for (const a of adminData) {
     const user = await prisma.user.upsert({
       where: { email: a.email },
-      update: { name: a.name, isActive: a.isActive, role: Role.ADMINISTRATOR },
+      update: { name: a.name, isActive: a.isActive, role: Role.ADMINISTRATOR, passwordHash: DEFAULT_PASSWORD_HASH, mustChangePassword: false },
       create: {
         name: a.name,
         email: a.email,
