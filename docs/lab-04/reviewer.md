@@ -6,7 +6,7 @@
 ## Pull Requests I authored (reviewed by my partner)
 | PR | Branch | Reviewer verdict |
 |:---|:-------|:-----------------|
-| [#41](https://github.com/phet526/toktickit/pull/41) | feat/lab4-specs | Pending |
+| [#46](https://github.com/phet526/toktickit/pull/46) | feat/lab4-specs | Pending |
 | | feat/lab4-actions-taken-foundation | Pending |
 | | feat/lab4-actions-taken-ui | Pending |
 | | feat/lab4-ticket-workflow | Pending |
@@ -15,7 +15,7 @@
 | | release/lab-04-integration | Pending |
 
 ### Reviewer comments & responses:
-- **PR #41 (feat/lab4-specs):**
+- **PR #46 (feat/lab4-specs):**
   - **Reviewer comment received:** <To be filled upon peer review>
   - **How I responded:** <To be filled upon peer review>
 
