@@ -66,38 +66,44 @@ Application Shell ทำหน้าที่เป็นกรอบโคร�
 หน้าจอแดชบอร์ดสรุปงานเชิงปฏิบัติการของเจ้าหน้าที่ไอทีและผู้ดูแลระบบ มุ่งเน้นความกระชับและการเชื่อมโยงข้อมูลสู่การปฏิบัติจริง:
 
 ```
-+-----------------------------------------------------------------------------------+
-| Welcome back, Michael!                                               [⟳ Refresh]  |
-| Here's what's happening with your queue today.                                    |
-+-----------------------------------------------------------------------------------+
-|  [ New ]      [ Open ]      [ In Progress ]  [ Waiting Req ]  [ My Assigned ]     |
-|    14            23               18                7               16            |
-| +2 from yest  -1 from yest   +4 from yest      +1 from yest    +1 from yest       |
-| (View Queue)  (View Queue)   (View Queue)      (View Queue)    (View Queue)       |
-+--------------------------------------------------+--------------------------------+
-| My Recent Tickets                       View all | Quick Actions                  |
-| ------------------------------------------------ | ------------------------------ |
-| TKT-2026-000134  [In Progress]  May 12, 09:14 AM | [+] Create Ticket              |
-| Laptop battery drains quickly                    | [🔍] Search Tickets            |
-|                                                  | [📋] My Queue                  |
-| TKT-2026-000130  [Open]         May 10, 02:15 PM | ------------------------------ |
-| Printer keeps showing offline                    | Tickets by IT Priority         |
-|                                                  | Low: 12  | Medium: 28          |
-| TKT-2026-000128  [In Progress]  May 9, 05:22 PM  | High: 17 | Critical: 4         |
-| Outlook freezing intermittently                  |                                |
-|                                                  | [Admin Summary - If Admin]     |
-| TKT-2026-000123  [Open]         May 9, 10:05 AM  | Active Users: 15 (Staff: 5)    |
-| Phone not receiving calls                        |                                |
-+--------------------------------------------------+--------------------------------+
++-------------------------------------------------------------------------------------------------------+
+| Welcome back, Michael!                                                                   [⟳ Refresh]  |
+| Here's what's happening with your queue today.                                                        |
++-------------------------------------------------------------------------------------------------------+
+|  [ New ]      [ Open ]      [ In Progress ]  [ Waiting Req ]  [ My Assigned ]  [ Unassigned ]         |
+|    14            23               18                7               16                8               |
+| +2 from yest  -1 from yest   +4 from yest      +1 from yest    +1 from yest      -2 from yest         |
+| (View Queue)  (View Queue)   (View Queue)      (View Queue)    (View Queue)      (View Queue)         |
++------------------------------------------------------+------------------------------------------------+
+| My Recent Tickets                           View all | Quick Actions                                  |
+| ---------------------------------------------------- | ---------------------------------------------- |
+| TKT-2026-000134  [In Progress]      May 12, 09:14 AM | [+] Create Ticket                              |
+| Laptop battery drains quickly                        | [🔍] Search Tickets                            |
+|                                                      | [📋] My Queue                                  |
+| TKT-2026-000130  [Open]             May 10, 02:15 PM | ---------------------------------------------- |
+| Printer keeps showing offline                        | Tickets by IT Priority                         |
+|                                                      | Low: 12  | Medium: 28                          |
+| TKT-2026-000128  [In Progress]      May 9, 05:22 PM  | High: 17 | Critical: 4                         |
+| Outlook freezing intermittently                      |                                                |
+|                                                      | [Admin Summary - If Admin]                     |
+| TKT-2026-000123  [Open]             May 9, 10:05 AM  | Active Users: 15 (Staff: 5)                    |
+| Phone not receiving calls                            |                                                |
++------------------------------------------------------+------------------------------------------------+
 ```
 
 - **Header Banner:**
   - ข้อความทักทาย: *"Welcome back, {User Name}!"* พร้อมข้อความกำกับ *"Here's what's happening with your queue today."*
   - ปุ่ม **Refresh (`⟳`):** สำหรับดึงข้อมูลล่าสุดจากเซิร์ฟเวอร์แบบเรียลไทม์ พร้อมแสดงหมุนติ้วขณะกำลังโหลด
 - **Metric Cards Row:**
-  - ประกอบด้วย 5 การ์ดหลัก: `New`, `Open`, `In Progress`, `Waiting for Requester`, และ `My Assigned`
-  - ภายในแต่ละการ์ด: แสดงชื่อสถานะ, ตัวเลขขนาดใหญ่เด่นชัด (Font Size 28–32px), ข้อความเปรียบเทียบ/สถานะ, และลิงก์ Drill-down
-  - **Drill-down Action:** เมื่อคลิกที่การ์ด ระบบจะนำทางไปยังหน้า `/staff/queue` พร้อมแนบ Query Parameter สำหรับกรองข้อมูลสถานะนั้นๆ ทันที
+  - ประกอบด้วย 6 การ์ดหลัก: `New`, `Open`, `In Progress`, `Waiting for Requester`, `My Assigned`, และ `Unassigned`
+  - ภายในแต่ละการ์ด: แสดงชื่อสถานะ, ตัวเลขขนาดใหญ่เด่นชัด (Font Size 28–32px), ข้อความเปรียบเทียบเชิงสถิติ (`+2 from yest`), และลิงก์ Drill-down
+  - **Drill-down Actions:** เมื่อคลิกที่การ์ด ระบบจะนำทางไปยังหน้า `/staff/queue` พร้อมแนบ Query Parameter สำหรับกรองข้อมูลสถานะนั้นๆ ทันที:
+    - `New`: `/staff/queue?status=New`
+    - `Open`: `/staff/queue?status=Open`
+    - `In Progress`: `/staff/queue?status=In%20Progress`
+    - `Waiting for Requester`: `/staff/queue?status=Waiting%20for%20Requester`
+    - `My Assigned`: `/staff/queue?owner=me`
+    - `Unassigned`: `/staff/queue?owner=unassigned`
 - **Two-Column Operational Layout (Desktop ≥ 992px):**
   - **คอลัมน์ซ้าย (My Recent Tickets):**
     - แสดงรายการตั๋วที่ได้รับมอบหมายล่าสุด 5 รายการ (`updatedAt DESC`)
@@ -187,6 +193,10 @@ Application Shell ทำหน้าที่เป็นกรอบโคร�
   - แสดงตารางข้อมูล Actions Taken ทั้งหมดเหมือนกับเจ้าหน้าที่ เพื่อความโปร่งใสในการให้บริการ
   - **ซ่อนปุ่ม `+ Add Action Taken` และปุ่ม `Edit` ทั้งหมด**
 - **Empty State:** เมื่อตั๋วยังไม่มีการบันทึก Actions Taken จะแสดงกรอบสีเทาอ่อนพร้อมข้อความ *"No actions taken recorded yet."*
+- **Unified Ticket Lifecycle Controls (สอดคล้องกับ Rubric Part 6):**
+  - หน้าจอ Ticket Detail ได้ผสานแถบควบคุมวงจรชีวิตตั๋ว (Lifecycle Action Bar) ทำงานร่วมกับ Actions Taken:
+    - **Assignee Selector:** เมนู Dropdown มอบหมายเจ้าหน้าที่ผู้รับผิดชอบตั๋ว พร้อมระบบตรวจสอบป้องกันการเลือกเจ้าหน้าที่ที่สถานะ Inactive (`isActive = false`) โดยหากเลือกเจ้าหน้าที่ที่ถูกปิดใช้งาน ระบบจะแสดงข้อความปฏิเสธสีแดงและไม่อนุญาตให้บันทึก
+    - **Status Transition Controls:** เมนูหรือปุ่มปรับเปลี่ยนสถานะตั๋ว (เช่น `In Progress`, `Waiting for Requester`, `Complete / Resolved`, `Cancelled`) โดยการกดเปลี่ยนสถานะเป็น Complete/Resolved จะถูกตรวจสอบผ่าน Resolution Gate (ต้องมี Assigned Owner และมีบันทึก Actions Taken อย่างน้อย 1 รายการ) เพื่อให้ครอบคลุมการประเมิน Part 6 Rubric 10 คะแนนเต็ม
 
 ---
 

@@ -102,7 +102,7 @@ Stakeholder ได้ระบุความต้องการอย่า�
 ### 5.3 Dashboard Calculation & Isolation Rules
 - **BR-12 (Requester Dashboard Data Isolation):** ข้อมูลสถิติและรายการตั๋วบน Requester Dashboard จะต้องถูกคำนวณและกรองเฉพาะตั๋วที่ `requesterId = currentUser.id` เท่านั้น ผู้แจ้งต้องไม่สามารถมองเห็นข้อมูลสถิติหรือตั๋วของผู้แจ้งท่านอื่น
 - **BR-13 (Authoritative Backend Metrics):** ค่าสถิติทั้งหมดบนแดชบอร์ด (เช่น จำนวนตั๋วในแต่ละสถานะ, การจัดกลุ่มตาม Priority) จะต้องคำนวณด้วยฟังก์ชันรวม (Aggregation) บนฐานข้อมูล PostgreSQL ผ่าน Backend API ห้ามทำการนับหรือกรองข้อมูลเฉพาะส่วนที่แสดงผลบนหน้าจอไคลเอนต์
-- **BR-14 (Dashboard Metric Boundaries):** การแสดงผล "Recently Updated Tickets" และ "Recently Resolved Tickets" จะดึงตั๋วที่มีการอัปเดตล่าสุดไม่เกิน 5 รายการ โดยเรียงลำดับจาก `updatedAt` จากใหม่ไปเก่า
+- **BR-14 (Dashboard Metric Boundaries & Lists):** การแสดงผล "Recently Updated Tickets" กำหนดให้ดึงรายการตั๋วที่มีการเคลื่อนไหวล่าสุดไม่เกิน 5 รายการ (`recentTickets` เรียงลำดับจาก `updatedAt DESC`) ในขณะที่ "Recently Resolved Tickets" สื่อถึงค่าสถิติเชิงปริมาณรวม (`metrics.resolvedTickets`) บนการ์ดสรุปสถานะของ Requester Dashboard ซึ่งคำนวณจากจำนวนตั๋วทั้งหมดของผู้ใช้ที่อยู่ในสถานะ `Resolved` พร้อมลิงก์ Drill-down ไปยัง `/my-tickets?status=Resolved` เพื่อให้ผู้แจ้งสามารถเข้าถึงและตรวจสอบรายการตั๋วที่เพิ่งได้รับการแก้ไขเสร็จสิ้นทั้งหมดได้อย่างรวดเร็ว
 - **BR-15 (Administrator Operational & Analytical Privileges):** Administrator มีสิทธิ์เข้าถึงหน้า IT Staff Dashboard ได้อย่างสมบูรณ์ และมีสิทธิ์เรียกดูข้อมูลสรุปจำนวนผู้ใช้งานระบบแยกตามบทบาทและสถานะการเปิดใช้งาน
 
 ---
@@ -152,7 +152,7 @@ Stakeholder ได้ระบุความต้องการอย่า�
   - ทุกเมนูมีเส้นใต้หรือแถบไฮไลต์สีเขียวระบุสถานะ Active ชัดเจน
 - **IT Staff Dashboard:**
   - ส่วนหัวต้อนรับ: "Welcome back, {Name}!" พร้อมปุ่ม Refresh ข้อมูล
-  - แถวการ์ดตัวเลขสรุป (Metric Cards): New, Open, In Progress, Waiting for Requester, และ My Assigned พร้อมแสดงการเปรียบเทียบหรือลิงก์ Drill-down คลิกเพื่อเปิด Queue ตามฟิลเตอร์นั้นๆ ทันที
+  - แถวการ์ดตัวเลขสรุป (Metric Cards): ประกอบด้วย 6 การ์ดหลัก ได้แก่ New, Open, In Progress, Waiting for Requester, My Assigned, และ Unassigned พร้อมแสดงการเปรียบเทียบหรือลิงก์ Drill-down คลิกเพื่อเปิด Queue ตามฟิลเตอร์นั้นๆ ทันที
   - ส่วนจัดวาง 2 คอลัมน์บน Desktop: ด้านซ้ายแสดงตาราง My Recent Tickets (5 รายการล่าสุดที่ตนเองรับผิดชอบ) และด้านขวาแสดง Quick Actions (Create Ticket, Search Tickets, My Queue) ร่วมกับสรุปจำนวนตั๋วตามระดับ Priority
   - ส่วนแสดงผลพิเศษสำหรับ Administrator: การ์ดสรุปจำนวนผู้ใช้งานระบบ (Total Active Users, Staff, Requesters, Admins)
 - **Requester Dashboard:**
@@ -165,6 +165,7 @@ Stakeholder ได้ระบุความต้องการอย่า�
   - รายการ Actions Taken: แสดง Date/Time, Description, Result, Performed By Badge, Follow-Up Badge (สีส้มเมื่อมีงานติดตามผล พร้อมแสดง Follow-up Note), และไอคอนแสดง Attachment Notes
   - ในมุมมองของ Requester: แสดงรายการทั้งหมดอย่างครบถ้วนเพื่อความโปร่งใส แต่แสดงผลเป็นโหมดอ่านอย่างเดียว (Read-only) โดยซ่อนปุ่ม Add และ Edit
   - Modal/Drawer สำหรับเพิ่มและแก้ไข Action Taken: มีฟิลด์กรอกข้อมูลครบถ้วน, สวิตช์เปิด-ปิด Follow-Up Required ซึ่งจะแสดงช่องกรอก Follow-up Note แบบบังคับเมื่อเปิดสวิตช์, ช่องระบุ Attachment Notes, และปุ่ม Save Action พร้อม Loading Spinner ป้องกันการคลิกซ้ำ
+  - **Unified Ticket Lifecycle & Actions Operations (สอดคล้องกับ Rubric Part 6):** เพื่อให้ครอบคลุมเกณฑ์การตรวจ Working Actions Taken UI (Part 6: list, create, assign, edit, status transition, complete, cancel, validation, inactive-assignee rejection, role restrictions, safe failures, responsive) หน้าจอ Ticket Detail ได้รวมศูนย์การจัดการวงจรชีวิตตั๋ว (การมอบหมาย Ticket Owner พร้อมการปฏิเสธ Assignee ที่มีสถานะ Inactive, การเปลี่ยนสถานะงานเช่น Complete/Resolved ที่ผ่าน Resolution Gate, และการ Cancel ตั๋ว) ให้อยู่ร่วมกับส่วนบันทึก Actions Taken อย่างเป็นระบบและไร้รอยต่อ
 - **Resolution Gate & Concurrency Feedback:**
   - หากเจ้าหน้าที่พยายามเปลี่ยนสถานะเป็น `Resolved` บนตั๋วที่ยังไม่มีบันทึก Actions Taken หรือยังไม่มีเจ้าของ ระบบจะแสดงข้อความเตือนสีแดงชัดเจนและไม่อนุญาตให้บันทึก
   - หากเกิด Concurrency Conflict (HTTP 409) จะมี Modal แจ้งเตือน: *"ตั๋วนี้ได้รับการอัปเดตโดยผู้ใช้อื่นแล้ว โปรดรีเฟรชข้อมูลล่าสุด"*
@@ -316,3 +317,5 @@ model ActionTaken {
 3. **Recent Tickets Boundary:** กำหนดให้ส่วน Recent Tickets บนทั้ง Requester Dashboard และ IT Staff Dashboard แสดงรายการตั๋วล่าสุดจำนวน 5 รายการ โดยเรียงลำดับจาก `updatedAt DESC` เพื่อความกระชับและไม่ทำให้หน้าจอแสดงผลรกเกินไป
 4. **Administrator Dashboard Structure:** เพื่อให้สอดคล้องกับแนวคิด Minimalist และความต้องการของระบบ Admin Dashboard จะนำคอมโพเนนต์ IT Staff Dashboard มาใช้เป็นแกนหลัก และเสริมการ์ดสรุปจำนวนผู้ใช้งานระบบ (User Account Summary) เข้าไป เพื่อให้แอดมินสามารถติดตามทั้งงานบริการไอทีและงานบริหารผู้ใช้ได้ในหน้าเดียว
 5. **Mobile Layout for Actions Taken:** เพื่อป้องกันการเกิด Scrollbar แนวนอนบนหน้าจอมือถือ (< 768px) รายการ Actions Taken จะถูกสลับการแสดงผลจากตาราง (Table View) มาเป็นการ์ดแนวตั้ง (Stacked Card View) ที่จัดวางข้อมูล Date/Time, Description, Result, และ Badges อย่างเป็นระเบียบ
+6. **Time Zone and Date Boundaries Contract (Section 6.2):** ระบบกำหนดให้เขตเวลามาตรฐานสำหรับการดำเนินงานทางธุรกิจคือ `Asia/Bangkok (UTC+7)` โดยข้อมูล Timestamp ทั้งหมดจะถูกบันทึกและส่งผ่าน API ในรูปแบบ ISO-8601 UTC String (`YYYY-MM-DDTHH:mm:ss.sssZ`) ขอบเขตของวันปฏิทิน (Calendar Day Boundaries) ในการคำนวณสถิติประจำวันถูกนิยามตั้งแต่ `00:00:00.000` ถึง `23:59:59.999` ตามเวลา Asia/Bangkok
+7. **Dashboard Trend Calculations ("from yesterday"):** ตัวเลขเปรียบเทียบเชิงแนวโน้ม (เช่น "+2 from yesterday") บน Staff Dashboard เป็นการเปรียบเทียบค่าผลรวมปัจจุบันกับค่า Snapshot ณ เวลาปิดรอบสิ้นวันปฏิทินก่อนหน้า (`23:59:59.999 Asia/Bangkok`) หากระบบเริ่มต้นใหม่หรือยังไม่มีประวัติของวันก่อนหน้า ให้แสดงค่าผลต่างเป็น `0`

@@ -292,9 +292,9 @@
   - `metrics.openTickets`: จำนวนตั๋วที่เป็นของตนเอง และสถานะอยู่ในกลุ่มเปิดงาน (`New`, `Open`, `In Progress`, `Waiting for Requester`, `Reopened`)
   - `metrics.inProgressTickets`: จำนวนตั๋วที่เป็นของตนเอง และสถานะเป็น `In Progress`
   - `metrics.waitingForRequesterTickets`: จำนวนตั๋วที่เป็นของตนเอง และสถานะเป็น `Waiting for Requester`
-  - `metrics.resolvedTickets`: จำนวนตั๋วที่เป็นของตนเอง และสถานะเป็น `Resolved`
+  - `metrics.resolvedTickets`: จำนวนตั๋วที่เป็นของตนเอง และสถานะเป็น `Resolved` (สอดคล้องกับข้อกำหนด "Recently Resolved Tickets" ใน Section 4.6 ซึ่งเป็นตัวเลขสถิติผลงานที่ผู้แจ้งสามารถกด Drill-down ไปยัง `/my-tickets?status=Resolved` เพื่อเปิดดูตั๋วที่เพิ่งแก้ไขเสร็จสิ้นทั้งหมด)
   - `metrics.closedTickets`: จำนวนตั๋วที่เป็นของตนเอง และสถานะเป็น `Closed`
-  - `recentTickets`: รายการตั๋วของตนเอง 5 รายการล่าสุด เรียงตาม `updatedAt DESC`
+  - `recentTickets`: รายการตั๋วของตนเอง 5 รายการล่าสุด เรียงตาม `updatedAt DESC` ("Recently Updated Tickets" ตาม Section 4.6)
 - **Empty State Behavior:** หากผู้ใช้ยังไม่มีตั๋ว ค่าตัวเลขทั้งหมดจะเป็น `0` และ `recentTickets` จะเป็น Array ว่าง `[]`
 - **Responses:**
   - `200 OK`:
@@ -337,7 +337,7 @@
   - `metrics.inProgressTickets`: จำนวนตั๋วทั้งหมดในระบบที่มีสถานะ `In Progress`
   - `metrics.waitingForRequesterTickets`: จำนวนตั๋วทั้งหมดในระบบที่มีสถานะ `Waiting for Requester`
   - `metrics.myAssignedTickets`: จำนวนตั๋วที่มี `assignedStaffId = currentUser.id` และสถานะไม่อยู่ใน `Closed` หรือ `Cancelled`
-  - `metrics.unassignedTickets`: จำนวนตั๋วที่ยังไม่มีผู้รับผิดชอบ (`assignedStaffId IS NULL`) และสถานะไม่อยู่ใน `Closed` หรือ `Cancelled`
+  - `metrics.unassignedTickets`: จำนวนตั๋วที่ยังไม่มีผู้รับผิดชอบ (`assignedStaffId IS NULL`) และสถานะไม่อยู่ใน `Closed` หรือ `Cancelled` (มี Drill-down ไปยัง `/staff/queue?owner=unassigned`)
   - `ticketsByPriority`: การแจกแจงจำนวนตั๋วที่ยังเปิดอยู่ตามระดับ `itPriority` (`Low`, `Medium`, `High`, `Critical`)
   - `myRecentTickets`: รายการตั๋วที่มอบหมายให้ตนเอง 5 รายการล่าสุด เรียงตาม `updatedAt DESC`
   - `adminSummary` (แนบเฉพาะเมื่อ `currentUser.role === 'ADMINISTRATOR'`):
@@ -386,6 +386,17 @@
 
 ---
 
+### 5.3 Time Zone, Date Boundaries & Trend Calculations (ตามข้อกำหนด Section 6.2)
+- **Business Time Zone:** กำหนดให้เขตเวลามาตรฐานสำหรับการดำเนินงานทางธุรกิจและการคำนวณคือ `Asia/Bangkok (UTC+7)`
+- **Storage & Wire Protocol:** ฟิลด์วันและเวลา (Timestamps) ทั้งหมดในฐานข้อมูลและ REST API Responses ถูกจัดเก็บและส่งผ่านในรูปแบบ ISO-8601 UTC String (`YYYY-MM-DDTHH:mm:ss.sssZ`) โดย Client UI จะทำการแปลงแสดงผลตาม Local Timezone ของผู้ใช้งาน (หรือ Asia/Bangkok)
+- **Calendar Day Boundaries:** ขอบเขตของวันปฏิทินสำหรับการคำนวณสถิติรายวันและการตัดรอบข้อมูล นิยามตั้งแต่เวลา `00:00:00.000` ถึง `23:59:59.999` ตามเวลา Asia/Bangkok
+- **Trend Calculation ("from yesterday"):** ตัวเลขแนวโน้มเปรียบเทียบ เช่น `+2 from yesterday` คำนวณจากผลต่างระหว่างค่าสถิติปัจจุบันกับค่าสถิติ ณ เวลาสิ้นสุดรอบวันปฏิทินก่อนหน้า (`23:59:59.999 Asia/Bangkok`) หากระบบเพิ่งเริ่มต้นหรือยังไม่มีข้อมูลวันก่อนหน้า ให้ส่งคืนค่าผลต่างเป็น `0`
+- **Behavior when No Matching Records Exist (Empty State):**
+  - ตัวเลขสถิติจำนวนตั๋ว (Counts) ทั้งหมดจะส่งคืนค่า `0` เสมอ (ห้ามส่งคืน `null` หรือ `undefined`)
+  - รายการตั๋ว (Recent Tickets Array) จะส่งคืนเป็น Array ว่าง `[]` เพื่อให้ Client สามารถตรวจสอบ `.length === 0` และแสดงผล Empty State ได้อย่างปลอดภัย
+
+---
+
 ## 6. Dashboard Drill-down Query Parameters Standard
 
 เพื่อให้การคลิกการ์ดสถิติบน Dashboard เชื่อมต่อไปยังหน้ารายการตั๋ว (Drill-down Destinations) ได้อย่างราบรื่นตามข้อกำหนด Section 4.6 และ 8:
@@ -426,6 +437,7 @@
 
 ระบบยังคงสนับสนุนและรักษาพฤติกรรมการทำงานของ REST API เดิมจาก Lab 1 ถึง Lab 3 ทั้งหมด 100%:
 - **Authentication Endpoints:** `POST /api/v1/auth/login`, `GET /api/v1/auth/me`, `POST /api/v1/auth/change-password`, `POST /api/v1/auth/logout`
+- **System Health & Readiness (Lab 1):** `GET /api/health` (ส่งคืน `{ "status": "ok", "timestamp": "...", "uptime": ... }` เพื่อสนับสนุน Health Check และ Regression Verification ตาม Section 6)
 - **Requester Ticket Endpoints:** `POST /api/v1/tickets`, `GET /api/v1/tickets`, `GET /api/v1/tickets/:id`, `POST /api/v1/tickets/:id/attachments`, `GET /api/v1/tickets/:id/attachments/:attachmentId/download`, `DELETE /api/v1/tickets/:id/attachments/:attachmentId`
 - **IT Staff Queue Endpoints:** `GET /api/v1/staff/tickets`, `GET /api/v1/staff/tickets/:id`, `PATCH /api/v1/staff/tickets/:id/ownership`, `PATCH /api/v1/staff/tickets/:id/priority`
 - **Communication Endpoints:** `GET/POST /api/v1/tickets/:id/comments`, `GET/POST /api/v1/staff/tickets/:id/notes`
