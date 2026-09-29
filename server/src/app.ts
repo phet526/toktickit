@@ -23,6 +23,7 @@ app.use(cookieParser());
 // Mount routers
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/tickets", ticketsRouter);
+app.use("/api/tickets", ticketsRouter); // Alias for backwards compatibility
 app.use("/api/v1/staff/tickets", staffTicketsRouter);
 app.use("/api/v1/admin/users", adminUsersRouter);
 

@@ -290,10 +290,64 @@ async function main() {
         });
       }
     }
-  }
-  console.log("✅ Sample tickets with comments, notes, and attachments seeded");
 
-  console.log("🎉 All Lab 3 seed data completed successfully!");
+    // 9. Seed Actions Taken (Lab 4 - Idempotent Seeding)
+    // เคส 1: ตั๋ว TKT-2026-00003 มี 2 Actions โดยเจ้าหน้าที่ต่างคนกัน (BR-02 Collaborative Work)
+    if (t.ticketNo === "TKT-2026-00003") {
+      const existingActions = await prisma.actionTaken.count({ where: { ticketId: createdTicket.id } });
+      if (existingActions === 0) {
+        await prisma.actionTaken.create({
+          data: {
+            ticketId: createdTicket.id,
+            actionDateTime: new Date("2026-09-22T08:30:00.000Z"),
+            actionDescription: "Inspected VPN gateway logs and detected packet drops at external firewall interface.",
+            result: "Identified MTU size mismatch causing intermittent disconnects.",
+            performedById: sarahId,
+            followUpRequired: true,
+            followUpNote: "Coordinate with Network Operations Center (NOC) for router configuration update.",
+            attachmentNotes: "firewall-traffic-capture.pcap"
+          }
+        });
+
+        await prisma.actionTaken.create({
+          data: {
+            ticketId: createdTicket.id,
+            actionDateTime: new Date("2026-09-22T10:15:00.000Z"),
+            actionDescription: "Applied MTU clamp rules on VPN endpoint and verified connection stability.",
+            result: "Continuous ping test ran for 30 minutes with 0% packet loss.",
+            performedById: michaelId,
+            followUpRequired: false,
+            followUpNote: null,
+            attachmentNotes: null
+          }
+        });
+      }
+    }
+
+    // เคส 2: ตั๋ว TKT-2026-00006 มี 1 Action Taken (พร้อมสำหรับการทดสอบ Resolution Gate)
+    if (t.ticketNo === "TKT-2026-00006") {
+      const existingActions = await prisma.actionTaken.count({ where: { ticketId: createdTicket.id } });
+      if (existingActions === 0) {
+        await prisma.actionTaken.create({
+          data: {
+            ticketId: createdTicket.id,
+            actionDateTime: new Date("2026-09-21T14:00:00.000Z"),
+            actionDescription: "Replaced faulty HDMI cable with certified high-speed display cable.",
+            result: "External monitor output restored at 4K resolution.",
+            performedById: sarahId,
+            followUpRequired: false,
+            followUpNote: null,
+            attachmentNotes: null
+          }
+        });
+      }
+    }
+
+    // เคส 3: ตั๋ว TKT-2026-00005 และ TKT-2026-00008 มี 0 Actions Taken (ทดสอบ Resolution Gate Blocking)
+  }
+  console.log("✅ Sample tickets with comments, notes, attachments, and actions taken seeded");
+
+  console.log("🎉 All Lab 4 seed data completed successfully!");
 }
 
 main()
