@@ -18,6 +18,7 @@ import {
   CommentItem,
   InternalNoteItem
 } from "../api";
+import ActionsTakenSection from "../components/ActionsTakenSection";
 
 export default function TicketDetail() {
   const { id } = useParams<{ id: string }>();
@@ -710,6 +711,15 @@ export default function TicketDetail() {
               </div>
             </div>
           </div>
+
+          {/* Actions Taken Section (Lab 4, Issue 3) */}
+          {user && (
+            <ActionsTakenSection
+              ticketId={ticketId}
+              currentUser={user}
+              isStaff={isStaff}
+            />
+          )}
 
           {/* Discussion & Internal Notes Card */}
           <div
