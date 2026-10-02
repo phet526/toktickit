@@ -102,10 +102,14 @@ export class ActionsTakenController {
             }
           }
         },
-        orderBy: { actionDateTime: "desc" }
+        orderBy: { actionDateTime: "asc" }
       });
 
-      return res.status(200).json({ data: actions });
+      return res.status(200).json({
+        ticketId: ticket.id,
+        ticketNo: ticket.ticketNo,
+        data: actions
+      });
     } catch (error) {
       console.error("Error fetching actions taken:", error);
       return res.status(500).json({ error: "Internal Server Error", code: "INTERNAL_SERVER_ERROR" });

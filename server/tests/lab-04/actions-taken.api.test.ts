@@ -8,9 +8,7 @@ import { validateActionTakenInput } from "../../src/controllers/actions-taken.co
 describe("Lab 4 — Actions Taken API & Model Tests (Issue 2: #41)", () => {
   const prisma = getPrisma();
   let itStaffCookie: string;
-  let adminCookie: string;
   let requesterACookie: string;
-  let requesterBCookie: string;
   let requesterAId: number;
   let ticketAId: number;
   let ticketBId: number;
@@ -27,17 +25,7 @@ describe("Lab 4 — Actions Taken API & Model Tests (Issue 2: #41)", () => {
     expect(staffLogin.status).toBe(200);
     itStaffCookie = staffLogin.headers["set-cookie"][0];
 
-    // 2. Log in as Administrator (John Smith)
-    const adminLogin = await request(app)
-      .post("/api/v1/auth/login")
-      .send({
-        email: "john.smith@toktickit.com",
-        password: "Toktick2026!"
-      });
-    expect(adminLogin.status).toBe(200);
-    adminCookie = adminLogin.headers["set-cookie"][0];
-
-    // 3. Log in as Requester A
+    // 2. Log in as Requester A
     const reqALogin = await request(app)
       .post("/api/v1/auth/login")
       .send({
@@ -48,17 +36,7 @@ describe("Lab 4 — Actions Taken API & Model Tests (Issue 2: #41)", () => {
     requesterACookie = reqALogin.headers["set-cookie"][0];
     requesterAId = reqALogin.body.user.id;
 
-    // 4. Log in as Requester B
-    const reqBLogin = await request(app)
-      .post("/api/v1/auth/login")
-      .send({
-        email: "requester_b@example.com",
-        password: "Toktick2026!"
-      });
-    expect(reqBLogin.status).toBe(200);
-    requesterBCookie = reqBLogin.headers["set-cookie"][0];
-
-    // 5. Find Ticket A (owned by Requester A) and Ticket B (owned by Jennifer / someone else)
+    // 3. Find Ticket A (owned by Requester A) and Ticket B (owned by Jennifer / someone else)
     const ticketA = await prisma.ticket.findFirst({
       where: { requester: { email: "requester_a@example.com" } }
     });
@@ -233,12 +211,12 @@ describe("Lab 4 — Actions Taken API & Model Tests (Issue 2: #41)", () => {
       const actionId = createRes.body.data.id;
       const initialUpdatedAt = createRes.body.data.updatedAt;
 
-      // 2. Admin updates the action
+      // 2. IT Staff updates the action
       const updateRes = await request(app)
         .put(`/api/v1/tickets/${ticketAId}/actions/${actionId}`)
-        .set("Cookie", adminCookie)
+        .set("Cookie", itStaffCookie)
         .send({
-          actionDescription: "Updated investigation by supervisor.",
+          actionDescription: "Updated investigation by IT staff.",
           result: "Diagnostics completed successfully.",
           followUpRequired: true,
           followUpNote: "Verify customer satisfaction next week.",
@@ -246,7 +224,7 @@ describe("Lab 4 — Actions Taken API & Model Tests (Issue 2: #41)", () => {
         });
 
       expect(updateRes.status).toBe(200);
-      expect(updateRes.body.data.actionDescription).toBe("Updated investigation by supervisor.");
+      expect(updateRes.body.data.actionDescription).toBe("Updated investigation by IT staff.");
       expect(updateRes.body.data.result).toBe("Diagnostics completed successfully.");
       expect(updateRes.body.data.followUpRequired).toBe(true);
       expect(updateRes.body.data.followUpNote).toBe("Verify customer satisfaction next week.");
@@ -265,6 +243,8 @@ describe("Lab 4 — Actions Taken API & Model Tests (Issue 2: #41)", () => {
         .set("Cookie", requesterACookie);
 
       expect(res.status).toBe(200);
+      expect(res.body.ticketId).toBe(ticketAId);
+      expect(res.body.ticketNo).toBeDefined();
       expect(Array.isArray(res.body.data)).toBe(true);
       expect(res.body.data.length).toBeGreaterThan(0);
       expect(res.body.data[0]).toHaveProperty("actionDescription");
@@ -386,6 +366,8 @@ describe("Lab 4 — Actions Taken API & Model Tests (Issue 2: #41)", () => {
         .set("Cookie", itStaffCookie);
 
       expect(res.status).toBe(200);
+      expect(res.body.ticketId).toBe(legacyTicket!.id);
+      expect(res.body.ticketNo).toBe(legacyTicket!.ticketNo);
       expect(res.body.data).toEqual([]);
     });
 
@@ -395,6 +377,7 @@ describe("Lab 4 — Actions Taken API & Model Tests (Issue 2: #41)", () => {
         .set("Cookie", itStaffCookie);
 
       expect(res.status).toBe(200);
+      expect(res.body.ticketId).toBe(ticketAId);
       expect(Array.isArray(res.body.data)).toBe(true);
     });
   });
