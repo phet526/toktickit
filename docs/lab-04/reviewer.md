@@ -7,8 +7,8 @@
 | PR | Branch | Reviewer verdict |
 |:---|:-------|:-----------------|
 | [#46](https://github.com/phet526/toktickit/pull/46) | `feat/lab4-specs` | Changes Requested (Resolved) |
-| [#47](https://github.com/phet526/toktickit/pull/47) | `feat/lab4-actions-taken-foundation` | Pending |
-| | feat/lab4-actions-taken-ui | Pending |
+| [#47](https://github.com/phet526/toktickit/pull/47) | `feat/lab4-actions-taken-foundation` | Approved (Merged) |
+| [#48](https://github.com/phet526/toktickit/pull/48) | `feat/lab4-actions-taken-ui` | Pending |
 | | feat/lab4-ticket-workflow | Pending |
 | | feat/lab4-dashboards | Pending |
 | | feat/lab4-hardening-regression | Pending |
