@@ -1,7 +1,8 @@
 import { Router, Request, Response, NextFunction } from "express";
 import multer from "multer";
 import { TicketController } from "../controllers/tickets.controller.js";
-import { requireAuth } from "../middlewares/auth.middleware.js";
+import { requireAuth, requireRole } from "../middlewares/auth.middleware.js";
+import { ActionsTakenController } from "../controllers/actions-taken.controller.js";
 
 const router = Router();
 
@@ -50,5 +51,18 @@ router.post("/:id/comments", requireAuth, TicketController.createComment);
 
 // Indicate Problem Appears Resolved
 router.post("/:id/resolve-indication", requireAuth, TicketController.indicateProblemResolved);
+
+// ---------------------------------------------------------------------------
+// Actions Taken Routes (Lab 4 Sprint Feature)
+// ---------------------------------------------------------------------------
+router.get("/:ticketId/actions", requireAuth, ActionsTakenController.getActions);
+router.post("/:ticketId/actions", requireAuth, requireRole("IT_STAFF", "ADMINISTRATOR"), ActionsTakenController.createAction);
+router.put("/:ticketId/actions/:actionId", requireAuth, requireRole("IT_STAFF", "ADMINISTRATOR"), ActionsTakenController.updateAction);
+
+// Aliases for /actions-taken and PATCH support
+router.get("/:ticketId/actions-taken", requireAuth, ActionsTakenController.getActions);
+router.post("/:ticketId/actions-taken", requireAuth, requireRole("IT_STAFF", "ADMINISTRATOR"), ActionsTakenController.createAction);
+router.put("/:ticketId/actions-taken/:actionId", requireAuth, requireRole("IT_STAFF", "ADMINISTRATOR"), ActionsTakenController.updateAction);
+router.patch("/:ticketId/actions-taken/:actionId", requireAuth, requireRole("IT_STAFF", "ADMINISTRATOR"), ActionsTakenController.updateAction);
 
 export default router;
