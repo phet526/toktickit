@@ -38,10 +38,16 @@ describe("Lab 4 — Actions Taken API & Model Tests (Issue 2: #41)", () => {
 
     // 3. Find Ticket A (owned by Requester A) and Ticket B (owned by Jennifer / someone else)
     const ticketA = await prisma.ticket.findFirst({
-      where: { requester: { email: "requester_a@example.com" } }
+      where: {
+        ticketNo: "TKT-2026-00004",
+        requester: { email: "requester_a@example.com" }
+      }
     });
     const ticketB = await prisma.ticket.findFirst({
-      where: { requester: { email: "jennifer.anderson@toktickit.com" } }
+      where: {
+        ticketNo: "TKT-2026-00003",
+        requester: { email: "jennifer.anderson@toktickit.com" }
+      }
     });
 
     expect(ticketA).toBeTruthy();
