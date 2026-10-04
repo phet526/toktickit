@@ -333,9 +333,9 @@ describe("Lab 4 — Ticket State Transition Matrix & Resolution Gate Tests (Issu
           requestedPriority: "Low",
           itPriority: "Low",
           currentStatus: "New",
-          requester: { connect: { id: requesterUser.id } },
-          category: { connect: { id: category.id } },
-          relatedSystem: relatedSystem ? { connect: { id: relatedSystem.id } } : undefined
+          requesterId: requesterUser.id,
+          categoryId: category.id,
+          relatedSystemId: relatedSystem?.id
         }
       });
 

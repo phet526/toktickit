@@ -376,7 +376,8 @@ describe("Lab 4 — Actions Taken API & Model Tests (Issue 2: #41)", () => {
             ticketNo: `TKT-MIGR-${Date.now()}`,
             summary: "Legacy ticket with 0 actions",
             description: "Test description",
-            status: "OPEN",
+            requestedPriority: "Low",
+            currentStatus: "Open",
             categoryId: 1,
             relatedSystemId: 1,
             requesterId: requester!.id

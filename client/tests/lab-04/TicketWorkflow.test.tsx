@@ -57,7 +57,8 @@ describe("Lab 4 — Ticket Workflow, Resolution Gate & Concurrency UI Tests (Iss
       loading: false,
       login: vi.fn(),
       logout: vi.fn(),
-      refreshUser: vi.fn()
+      refreshUser: vi.fn(),
+      changePassword: vi.fn()
     });
     vi.mocked(api.getStaffTicketDetail).mockResolvedValue(mockStaffTicket);
     vi.mocked(api.getActionsTaken).mockResolvedValue({
