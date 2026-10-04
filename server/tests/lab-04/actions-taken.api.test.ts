@@ -361,10 +361,28 @@ describe("Lab 4 — Actions Taken API & Model Tests (Issue 2: #41)", () => {
   // ---------------------------------------------------------------------------
   describe("MIGR-01: Legacy Tickets Data Integrity (AC-16, Section 5.2)", () => {
     it("should safely return empty array for legacy tickets with 0 Actions Taken", async () => {
-      // Find ticket with 0 actions (e.g., TKT-2026-00008)
-      const legacyTicket = await prisma.ticket.findFirst({
-        where: { ticketNo: "TKT-2026-00008" }
+      // Find a ticket with 0 actions or create an isolated legacy ticket
+      let legacyTicket = await prisma.ticket.findFirst({
+        where: {
+          actionsTaken: {
+            none: {}
+          }
+        }
       });
+      if (!legacyTicket) {
+        const requester = await prisma.user.findFirst({ where: { role: "REQUESTER" } });
+        legacyTicket = await prisma.ticket.create({
+          data: {
+            ticketNo: `TKT-MIGR-${Date.now()}`,
+            summary: "Legacy ticket with 0 actions",
+            description: "Test description",
+            status: "OPEN",
+            categoryId: 1,
+            relatedSystemId: 1,
+            requesterId: requester!.id
+          }
+        });
+      }
       expect(legacyTicket).toBeTruthy();
 
       const res = await request(app)

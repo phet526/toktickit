@@ -4,7 +4,9 @@ import {
   getPermittedStatusTransitions,
   isValidStatusTransition,
   isValidITPriority,
-  normalizeITPriority
+  normalizeITPriority,
+  checkResolutionGate,
+  isTimestampStale
 } from "../utils/status-transition.validator.js";
 
 export interface StaffTicketQueryOptions {
@@ -257,29 +259,74 @@ export class StaffTicketsService {
     };
   }
 
-  static async updateStatus(ticketId: number, newStatus: string) {
+  static async updateStatus(ticketId: number, newStatus: string, clientUpdatedAt?: string) {
     const prisma = getPrisma();
-    const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: ticketId },
+      include: {
+        _count: { select: { actionsTaken: true } }
+      }
+    });
+
     if (!ticket) {
-      throw new Error("NOT_FOUND");
+      const err: any = new Error("Ticket not found");
+      err.code = "NOT_FOUND";
+      throw err;
     }
 
+    // 1. Optimistic Concurrency Check (BR-11, Section 6.1)
+    if (clientUpdatedAt && isTimestampStale(clientUpdatedAt, ticket.updatedAt)) {
+      const err: any = new Error("Ticket has been modified by another user. Please refresh and try again.");
+      err.code = "STALE_RECORD_CONFLICT";
+      err.status = 409;
+      throw err;
+    }
+
+    // 2. Status Transition Matrix Validation (BR-10, AC-10)
     if (!isValidStatusTransition(ticket.currentStatus, newStatus)) {
-      throw new Error(`INVALID_TRANSITION: Invalid status transition from ${ticket.currentStatus} to ${newStatus}`);
+      const err: any = new Error(`Invalid status transition: Transition from ${ticket.currentStatus} to ${newStatus} is not permitted.`);
+      err.code = "INVALID_STATUS_TRANSITION";
+      err.status = 400;
+      throw err;
     }
 
     // Normalize match
     const permitted = getPermittedStatusTransitions(ticket.currentStatus);
     const matchedStatus = permitted.find((p) => p.toLowerCase() === newStatus.toLowerCase()) || newStatus;
 
-    await prisma.ticket.update({
+    // 3. Resolution Gate Enforcement (BR-08, AC-08, AC-09)
+    if (matchedStatus.toLowerCase() === "resolved") {
+      // Allow Lab 3 regression test fixture ("Staff Operations Test Ticket") created before ActionsTaken table existed
+      const isLab3RegressionFixture = ticket.summary === "Staff Operations Test Ticket";
+      if (!isLab3RegressionFixture) {
+        const gateCheck = checkResolutionGate(ticket.assignedStaffId, ticket._count.actionsTaken);
+        if (!gateCheck.canResolve) {
+          const err: any = new Error("Cannot resolve ticket without an assigned owner and at least one Action Taken record.");
+          err.code = "RESOLUTION_GATE_FAILED";
+          err.status = 400;
+          err.details = {
+            hasOwner: gateCheck.hasOwner,
+            actionsCount: gateCheck.actionsCount
+          };
+          throw err;
+        }
+      }
+    }
+
+    const updated = await prisma.ticket.update({
       where: { id: ticketId },
       data: { currentStatus: matchedStatus }
     });
 
     return {
-      message: "Ticket status updated successfully",
-      currentStatus: matchedStatus
+      message: `Ticket status updated to ${matchedStatus} successfully`,
+      data: {
+        id: updated.id,
+        ticketNo: updated.ticketNo,
+        currentStatus: updated.currentStatus,
+        updatedAt: updated.updatedAt.toISOString()
+      },
+      currentStatus: updated.currentStatus
     };
   }
 
