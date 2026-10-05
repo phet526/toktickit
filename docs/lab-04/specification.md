@@ -153,7 +153,7 @@ Stakeholder ได้ระบุความต้องการอย่า�
 - **IT Staff Dashboard:**
   - ส่วนหัวต้อนรับ: "Welcome back, {Name}!" พร้อมปุ่ม Refresh ข้อมูล
   - แถวการ์ดตัวเลขสรุป (Metric Cards): ประกอบด้วย 6 การ์ดหลัก ได้แก่ New, Open, In Progress, Waiting for Requester, My Assigned, และ Unassigned พร้อมแสดงการเปรียบเทียบหรือลิงก์ Drill-down คลิกเพื่อเปิด Queue ตามฟิลเตอร์นั้นๆ ทันที
-  - ส่วนจัดวาง 2 คอลัมน์บน Desktop: ด้านซ้ายแสดงตาราง My Recent Tickets (5 รายการล่าสุดที่ตนเองรับผิดชอบ) และด้านขวาแสดง Quick Actions (Create Ticket, Search Tickets, My Queue) ร่วมกับสรุปจำนวนตั๋วตามระดับ Priority
+  - ส่วนจัดวาง 2 คอลัมน์บน Desktop: ด้านซ้ายแสดงตาราง My Recent Tickets (5 รายการล่าสุดที่ตนเองรับผิดชอบ) และด้านขวาแสดง Quick Actions (Search Tickets, My Queue, Unassigned Queue) ร่วมกับสรุปจำนวนตั๋วตามระดับ Priority (โดยไม่มีปุ่มสร้างตั๋วเพื่อรักษาความปลอดภัยตามหลัก Strict Role Separation ซึ่งสงวนสิทธิ์สร้างตั๋วเฉพาะ Requester)
   - ส่วนแสดงผลพิเศษสำหรับ Administrator: การ์ดสรุปจำนวนผู้ใช้งานระบบ (Total Active Users, Staff, Requesters, Admins)
 - **Requester Dashboard:**
   - ส่วนหัวต้อนรับ: "Welcome, {Name}!"

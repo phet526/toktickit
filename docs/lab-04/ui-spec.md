@@ -77,9 +77,9 @@ Application Shell ทำหน้าที่เป็นกรอบโคร�
 +------------------------------------------------------+------------------------------------------------+
 | My Recent Tickets                           View all | Quick Actions                                  |
 | ---------------------------------------------------- | ---------------------------------------------- |
-| TKT-2026-000134  [In Progress]      May 12, 09:14 AM | [+] Create Ticket                              |
-| Laptop battery drains quickly                        | [🔍] Search Tickets                            |
-|                                                      | [📋] My Queue                                  |
+| TKT-2026-000134  [In Progress]      May 12, 09:14 AM | [🔍] Search Tickets                            |
+| Laptop battery drains quickly                        | [📋] My Queue                                  |
+|                                                      | [⚡] Unassigned Queue                           |
 | TKT-2026-000130  [Open]             May 10, 02:15 PM | ---------------------------------------------- |
 | Printer keeps showing offline                        | Tickets by IT Priority                         |
 |                                                      | Low: 12  | Medium: 28                          |
@@ -111,7 +111,7 @@ Application Shell ทำหน้าที่เป็นกรอบโคร�
     - ลิงก์ **"View all":** นำทางไปยัง `/staff/queue?owner=me`
     - Empty State: แสดงไอคอนกล่องว่าง พร้อมข้อความ *"No recent tickets assigned to you."*
   - **คอลัมน์ขวา (Quick Actions & Analytics):**
-    - **Quick Actions Panel:** ปุ่มทางลัดขนาดใหญ่ 3 ปุ่ม ได้แก่ `+ Create Ticket` (ไปหน้าสร้างตั๋ว), `🔍 Search Tickets` (ไปหน้า Queue โฟกัสช่องค้นหา), และ `📋 My Queue` (เปิดตั๋วที่ตนเองดูแล)
+    - **Quick Actions Panel:** ปุ่มทางลัดในการปฏิบัติงาน 3 ปุ่ม ได้แก่ `🔍 Search Tickets` (ไปหน้า Queue โฟกัสช่องค้นหา), `📋 My Queue` (เปิดตั๋วที่ตนเองดูแล), และ `⚡ Unassigned Queue` (เปิดดูตั๋วที่ยังไม่มีเจ้าหน้าที่รับผิดชอบ) (ทั้งนี้ IT Staff และ Admin ไม่มีสิทธิ์สร้างตั๋วตามสิทธิ์ RBAC ซึ่งสงวนไว้เฉพาะ Requester)
     - **Tickets by Priority Panel:** แสดงตัวเลขสรุปตั๋วที่ยังเปิดอยู่จำแนกตามความสำคัญ (Low, Medium, High, Critical) พร้อมป้ายสีประจำระดับ
     - **Administrator Summary Extension (เฉพาะ Admin):** แสดงการ์ดสรุปจำนวนผู้ใช้งานในระบบ (`totalActiveUsers`, `activeStaff`, `activeRequesters`, `activeAdmins`) พร้อมปุ่มลิงก์ไปยัง User Management
 - **Safe Failure & Loading States:**

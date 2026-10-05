@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { getTickets, checkSystem, getRelatedSystems, Category, RelatedSystem } from "../api";
 
 export default function MyTickets() {
+  const [searchParams] = useSearchParams();
+  const initialStatus = searchParams.get("status") || "";
+
   const [tickets, setTickets] = useState<any[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [systems, setSystems] = useState<RelatedSystem[]>([]);
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(initialStatus);
   const [category, setCategory] = useState("");
   const [system, setSystem] = useState("");
   const [sort, setSort] = useState("createdAt:desc");
@@ -15,6 +18,13 @@ export default function MyTickets() {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const urlStatus = searchParams.get("status");
+    if (urlStatus !== null) {
+      setStatus(urlStatus);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Fetch filter options on mount
@@ -91,9 +101,12 @@ export default function MyTickets() {
             <select className="form-select" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} aria-label="Filter by Status">
               <option value="">All Statuses</option>
               <option value="New">New</option>
+              <option value="Open">Open</option>
               <option value="In Progress">In Progress</option>
+              <option value="Waiting for Requester">Waiting for Requester</option>
               <option value="Resolved">Resolved</option>
               <option value="Closed">Closed</option>
+              <option value="Cancelled">Cancelled</option>
             </select>
 
             <select className="form-select" value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }} aria-label="Filter by Category">
