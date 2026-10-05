@@ -81,8 +81,18 @@ export default function Layout({ requesterName, onLogout }: LayoutProps) {
                 <>
                   <li className="nav-item">
                     <Link 
-                      className={`nav-link px-3 ${location.pathname === "/my-tickets" || location.pathname === "/" ? "active fw-semibold" : ""}`} 
+                      className={`nav-link px-3 ${location.pathname === "/requester/dashboard" || location.pathname === "/" ? "active fw-semibold" : ""}`} 
+                      to="/requester/dashboard"
+                      id="navRequesterDashboard"
+                    >
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link 
+                      className={`nav-link px-3 ${location.pathname === "/my-tickets" ? "active fw-semibold" : ""}`} 
                       to="/my-tickets"
+                      id="navMyTickets"
                     >
                       My Tickets
                     </Link>
@@ -91,6 +101,7 @@ export default function Layout({ requesterName, onLogout }: LayoutProps) {
                     <Link 
                       className={`nav-link px-3 ${location.pathname === "/create-ticket" ? "active fw-semibold" : ""}`} 
                       to="/create-ticket"
+                      id="navCreateTicket"
                     >
                       Create Ticket
                     </Link>
@@ -99,22 +110,44 @@ export default function Layout({ requesterName, onLogout }: LayoutProps) {
               )}
 
               {role === "IT_STAFF" && (
-                <li className="nav-item">
-                  <Link 
-                    className={`nav-link px-3 ${location.pathname.startsWith("/staff") ? "active fw-semibold" : ""}`} 
-                    to="/staff/queue"
-                  >
-                    My Queue
-                  </Link>
-                </li>
+                <>
+                  <li className="nav-item">
+                    <Link 
+                      className={`nav-link px-3 ${location.pathname === "/staff/dashboard" || location.pathname === "/" ? "active fw-semibold" : ""}`} 
+                      to="/staff/dashboard"
+                      id="navStaffDashboard"
+                    >
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link 
+                      className={`nav-link px-3 ${location.pathname === "/staff/queue" ? "active fw-semibold" : ""}`} 
+                      to="/staff/queue"
+                      id="navStaffQueue"
+                    >
+                      Ticket Queue
+                    </Link>
+                  </li>
+                </>
               )}
 
               {role === "ADMINISTRATOR" && (
                 <>
                   <li className="nav-item">
                     <Link 
-                      className={`nav-link px-3 ${location.pathname.startsWith("/staff") ? "active fw-semibold" : ""}`} 
+                      className={`nav-link px-3 ${location.pathname === "/staff/dashboard" || location.pathname === "/" ? "active fw-semibold" : ""}`} 
+                      to="/staff/dashboard"
+                      id="navAdminDashboard"
+                    >
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link 
+                      className={`nav-link px-3 ${location.pathname === "/staff/queue" ? "active fw-semibold" : ""}`} 
                       to="/staff/queue"
+                      id="navAdminQueue"
                     >
                       Ticket Queue
                     </Link>
@@ -123,6 +156,7 @@ export default function Layout({ requesterName, onLogout }: LayoutProps) {
                     <Link 
                       className={`nav-link px-3 ${location.pathname.startsWith("/admin") ? "active fw-semibold" : ""}`} 
                       to="/admin/users"
+                      id="navUserManagement"
                     >
                       User Management
                     </Link>
