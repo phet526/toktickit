@@ -283,7 +283,8 @@ export class TicketService {
 
     return {
       message: "Problem resolution indicated successfully",
-      problemResolvedReported: true
+      problemResolvedReported: true,
+      currentStatus: ticket.currentStatus
     };
   }
 }

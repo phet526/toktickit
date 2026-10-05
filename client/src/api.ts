@@ -376,21 +376,26 @@ export async function updateITPriority(
 
 export async function updateTicketStatus(
   ticketId: number,
-  status: string
-): Promise<{ message: string; currentStatus: string }> {
+  status: string,
+  updatedAt?: string
+): Promise<{ message: string; currentStatus: string; data?: any }> {
   const res = await fetch(`${API_URL}/api/v1/staff/tickets/${ticketId}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ status })
+    body: JSON.stringify({ status, updatedAt })
   });
 
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.error || "Failed to update ticket status");
+    const error: any = new Error(data.error || "Failed to update ticket status");
+    error.status = res.status;
+    error.code = data.code;
+    error.details = data.details;
+    throw error;
   }
 
-  return res.json();
+  return data;
 }
 
 export async function getPublicComments(ticketId: number): Promise<CommentItem[]> {

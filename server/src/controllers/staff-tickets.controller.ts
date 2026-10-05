@@ -131,20 +131,38 @@ export async function updateTicketStatus(req: Request, res: Response): Promise<v
       return;
     }
 
-    const { status } = req.body;
+    const { status, updatedAt } = req.body;
     if (!status || typeof status !== "string") {
       res.status(400).json({ error: "status is required and must be a string" });
       return;
     }
 
-    const result = await StaffTicketsService.updateStatus(ticketId, status);
+    const result = await StaffTicketsService.updateStatus(ticketId, status, updatedAt);
     res.status(200).json(result);
   } catch (error: any) {
-    if (error.message?.startsWith("INVALID_TRANSITION")) {
-      res.status(400).json({ error: error.message });
+    if (error.code === "STALE_RECORD_CONFLICT" || error.status === 409) {
+      res.status(409).json({
+        error: error.message || "Ticket has been modified by another user. Please refresh and try again.",
+        code: "STALE_RECORD_CONFLICT"
+      });
       return;
     }
-    if (error.message === "NOT_FOUND") {
+    if (error.code === "RESOLUTION_GATE_FAILED") {
+      res.status(400).json({
+        error: error.message,
+        code: "RESOLUTION_GATE_FAILED",
+        details: error.details
+      });
+      return;
+    }
+    if (error.code === "INVALID_STATUS_TRANSITION" || error.message?.startsWith("INVALID_TRANSITION")) {
+      res.status(400).json({
+        error: error.message,
+        code: "INVALID_STATUS_TRANSITION"
+      });
+      return;
+    }
+    if (error.message === "NOT_FOUND" || error.code === "NOT_FOUND") {
       res.status(404).json({ error: "Ticket not found" });
       return;
     }
