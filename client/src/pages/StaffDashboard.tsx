@@ -345,23 +345,13 @@ export default function StaffDashboard() {
                 </div>
                 <div className="card-body p-3 p-md-4 d-flex flex-column gap-2">
                   <Link
-                    to="/create-ticket"
-                    id="btnStaffQuickCreate"
+                    to="/staff/queue"
+                    id="btnStaffQuickSearch"
                     className="btn text-white p-2 px-3 text-start shadow-sm d-flex align-items-center gap-2 text-decoration-none"
                     style={{ backgroundColor: "#006B3C", borderRadius: "8px" }}
                   >
-                    <span>➕</span>
-                    <span className="fw-semibold">Create Ticket</span>
-                  </Link>
-
-                  <Link
-                    to="/staff/queue"
-                    id="btnStaffQuickSearch"
-                    className="btn btn-outline-secondary p-2 px-3 text-start shadow-sm d-flex align-items-center gap-2 text-decoration-none"
-                    style={{ borderRadius: "8px" }}
-                  >
                     <span>🔍</span>
-                    <span className="fw-semibold text-dark">Search Tickets</span>
+                    <span className="fw-semibold">Search Tickets</span>
                   </Link>
 
                   <Link
@@ -371,7 +361,17 @@ export default function StaffDashboard() {
                     style={{ borderRadius: "8px" }}
                   >
                     <span>📋</span>
-                    <span className="fw-semibold text-dark">My Queue</span>
+                    <span className="fw-semibold text-dark">My Assigned Queue</span>
+                  </Link>
+
+                  <Link
+                    to="/staff/queue?owner=unassigned"
+                    id="btnStaffQuickUnassigned"
+                    className="btn btn-outline-secondary p-2 px-3 text-start shadow-sm d-flex align-items-center gap-2 text-decoration-none"
+                    style={{ borderRadius: "8px" }}
+                  >
+                    <span>⚡</span>
+                    <span className="fw-semibold text-dark">Unassigned Queue</span>
                   </Link>
                 </div>
               </div>

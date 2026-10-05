@@ -130,10 +130,11 @@ describe("Lab 4 — IT Staff Dashboard Component Tests (Issue 5: #44, UI-07 & ST
     expect(screen.getByText("TKT-2026-000134")).toBeInTheDocument();
     expect(screen.getByText("Laptop battery drains quickly")).toBeInTheDocument();
 
-    // Check Quick Action links
-    expect(document.querySelector("a[href='/create-ticket']")).toBeTruthy();
+    // Check Quick Action links (Operational shortcuts for Staff/Admin - No Create Ticket as per RBAC matrix)
+    expect(document.querySelector("a[href='/create-ticket']")).toBeNull();
     expect(document.querySelector("a[href='/staff/queue']")).toBeTruthy();
     expect(document.querySelector("a[href='/staff/queue?owner=me']")).toBeTruthy();
+    expect(document.querySelector("a[href='/staff/queue?owner=unassigned']")).toBeTruthy();
   });
 
   it("UI-07: should render Admin Summary panel when logged in as Administrator", async () => {
