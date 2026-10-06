@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 import { execSync } from 'node:child_process';
 
 test.describe('Lab 4 — Actions Taken Workflow & Access Control (E2E-01, E2E-02, E2E-03)', () => {
-  test.beforeEach(() => {
+  test.beforeAll(() => {
     try {
       execSync('npm run prisma:seed --prefix server', { stdio: 'ignore' });
     } catch {

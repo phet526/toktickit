@@ -3,9 +3,16 @@ import { test, expect } from '@playwright/test';
 import { execSync } from 'node:child_process';
 
 test.describe('Lab 4 — Ticket Resolution Gate & Lifecycle Transitions (E2E-04, E2E-05)', () => {
-  test.beforeEach(() => {
+  test.beforeAll(() => {
     try {
       execSync('npm run prisma:seed --prefix server', { stdio: 'ignore' });
+    } catch {
+      // fallback
+    }
+  });
+
+  test.beforeEach(() => {
+    try {
       const cleanupCmd = `node -e "const { PrismaClient } = require('./server/node_modules/@prisma/client'); const p = new PrismaClient(); p.ticket.findUnique({ where: { ticketNo: 'TKT-2026-00005' } }).then(t => t && p.actionTaken.deleteMany({ where: { ticketId: t.id } })).then(() => p.ticket.update({ where: { ticketNo: 'TKT-2026-00005' }, data: { currentStatus: 'Open' } })).then(() => { process.exit(0); });"`;
       execSync(cleanupCmd, { stdio: 'ignore' });
     } catch {
