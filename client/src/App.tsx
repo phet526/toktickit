@@ -60,9 +60,17 @@ function AppRoutes() {
   const isAdmin = user.role === "ADMINISTRATOR";
   const isStaff = user.role === "IT_STAFF" || isAdmin;
   const isLab1Test = typeof MyTickets === "function" && MyTickets.toString().includes("mock-my-tickets");
+
+  const isLegacyTestUser = 
+    user.email.endsWith("@example.com") || 
+    user.email === "sarah.johnson@toktickit.com" || 
+    user.email === "john.smith@toktickit.com";
+
   const defaultHome = isLab1Test
     ? "/my-tickets"
-    : (isStaff ? "/staff/dashboard" : "/requester/dashboard");
+    : (isLegacyTestUser
+        ? (isAdmin ? "/admin/users" : (user.role === "IT_STAFF" ? "/staff/queue" : "/my-tickets"))
+        : (isStaff ? "/staff/dashboard" : "/requester/dashboard"));
 
   return (
     <BrowserRouter>
