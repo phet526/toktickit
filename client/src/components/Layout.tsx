@@ -10,6 +10,11 @@ interface LayoutProps {
 export default function Layout({ requesterName, onLogout }: LayoutProps) {
   const location = useLocation();
   const auth = useAuth();
+  const [isNavOpen, setIsNavOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsNavOpen(false);
+  }, [location.pathname]);
   
   const currentUser = auth.user;
   const displayName = requesterName || currentUser?.name || "User";
@@ -65,16 +70,16 @@ export default function Layout({ requesterName, onLogout }: LayoutProps) {
           <button 
             className="navbar-toggler border-0" 
             type="button" 
-            data-bs-toggle="collapse" 
-            data-bs-target="#navbarNav"
+            onClick={() => setIsNavOpen(!isNavOpen)}
             aria-controls="navbarNav"
-            aria-expanded="false"
+            aria-expanded={isNavOpen}
             aria-label="Toggle navigation"
+            id="btnNavbarToggler"
           >
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          <div className="collapse navbar-collapse" id="navbarNav">
+          <div className={`collapse navbar-collapse ${isNavOpen ? "show" : ""}`} id="navbarNav">
             {/* Role-Based Nav Items */}
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               {role === "REQUESTER" && (

@@ -61,6 +61,14 @@ npm run prisma:seed --prefix server
 - **Issue 27 (Administrator User Management):** หน้าจอจัดการผู้ใช้สำหรับผู้ดูแลระบบ: ตารางแสดงรายชื่อผู้ใช้ ค้นหา กรองตาม Role, สร้างบัญชีผู้ใช้ใหม่พร้อม Initial Password, แก้ไขข้อมูล, รีเซ็ตรหัสผ่าน, เปิด/ปิดการใช้งานบัญชี (Activate/Deactivate) พร้อมกฎความปลอดภัยห้ามปิดบัญชีตนเอง (BR-19) และห้ามปิด Admin คนสุดท้าย (BR-20)
 - **Issue 28 (Release Integration & Multi-Device Verification):** การทดสอบระบบรอบด้านแบบ End-to-End ครบทุก Flow และตรวจสอบการแสดงผลแบบ Responsive บน Desktop, Tablet, และ Mobile (Zero Horizontal Scrollbar)
 
+### Lab 4: Actions Taken, Ticket Workflow, Role Dashboards & Hardening (Issue 40-45)
+- **Issue 40 (Sprint 4 Engineering Contract & Specs):** กำหนดเอกสารสเปกทางวิศวกรรมครบวงจร ได้แก่ `specification.md`, `api-spec.md`, `ui-spec.md`, และ `tests.md` ในโฟลเดอร์ `docs/lab-04/` ครอบคลุม Business Rules BR-01 ถึง BR-15 และเกณฑ์การยอมรับ AC-01 ถึง AC-16
+- **Issue 41 (Actions Taken Model, Prisma Migration, Seed & Backend APIs):** สร้าง Data Model `ActionTaken` เชื่อมโยงแบบ One-to-Many กับ Ticket, รัน Migration โดยคงความสมบูรณ์ของข้อมูลเดิม, Seed ข้อมูลประวัติการปฏิบัติงานเริ่มต้น, และพัฒนา REST APIs รองรับ CRUD พร้อมการผูกมัดผู้บันทึก (`performedById`) จากเซสชันจริงโดยอัตโนมัติ และการบังคับระบุ Follow-up Note เมื่อต้องการการติดตามงาน
+- **Issue 42 (Actions Taken Component on Ticket Detail & Form Validation):** พัฒนาคอมโพเนนต์ Actions Taken บนหน้ารายละเอียดตั๋ว รองรับการแสดงผลแบบ Dual Responsive (ตารางแบบละเอียดบน Desktop และการ์ดเรียงซ้อนบน Mobile < 768px ปราศจากแถบเลื่อนแนวนอน), การจำกัดสิทธิ์ Requester ให้ดูได้เฉพาะโหมดอ่านอย่างเดียว (Read-only), ฟอร์ม Modal บันทึก/แก้ไขพร้อมระบบ Conditional Validation และป้องกัน Double-submit
+- **Issue 43 (Ticket Workflow, Resolution Gate & Concurrency Backend/UI):** พัฒนาระบบประตูความปลอดภัย **Resolution Gate** บังคับว่าตั๋วต้องมีผู้รับผิดชอบ (Assigned Owner) และมีบันทึก Action Taken อย่างน้อย 1 รายการจึงจะสามารถเปลี่ยนสถานะเป็น `Resolved` ได้, ระบบตรวจสอบวงจรชีวิตตั๋วตาม State Transition Matrix, สัญญาณ Requester Advisory Signal ("Problem Appears Resolved") โดยไม่เปลี่ยนสถานะทางการของตั๋ว, และกลไก Optimistic Concurrency Control (HTTP 409 Conflict) ป้องกันการบันทึกข้อมูลทับซ้อน
+- **Issue 44 (IT Staff & Requester Dashboards Backend Metrics & UI):** หน้าแดชบอร์ดตามบทบาท: Requester Dashboard แสดง 4 Metric Cards พร้อมลิงก์ Drill-down นำทางไปยังรายการตั๋วและแยกข้อมูลตามสิทธิ์อย่างเข้มงวด (Strict Data Isolation), IT Staff Dashboard แสดง 6 Metric Cards ครอบคลุมคิวงานทั้งหมด, สรุปตั๋วตามระดับความสำคัญ (IT Priority), ทางลัด Quick Actions, และ Admin Summary Panel แสดงภาพรวมผู้ใช้งานในระบบสำหรับ Administrator
+- **Issue 45 (Final Regression Coverage, Accessibility & Release Integration):** ชุดทดสอบ Playwright E2E ครบ 8 โฟลว์สำคัญ (E2E-01 ถึง E2E-08), การันตี Zero Regression 100% สำหรับการทดสอบเดิมทั้งหมดจาก Lab 1 ถึง Lab 3 โดยไม่แก้ไขโค้ดทดสอบเดิม, การรักษาความเข้ากันได้ของระบบนำทาง (Legacy Routing Safeguards), ตรวจสอบ Accessibility WCAG 2.1 AA (Focus rings, Color contrast), และตรวจสอบการแสดงผลบนมือถือขนาด 375px โดยปราศจาก Horizontal Scrollbar 100%
+
 ---
 
 ## บัญชีผู้ใช้เริ่มต้นสำหรับทดสอบ (Seed Credentials)
@@ -84,19 +92,17 @@ npm run prisma:seed --prefix server
 
 ## การรันคำสั่งทดสอบ (Testing)
 
-ระบบมี Automated Tests ครอบคลุมทั้งฝั่ง Server และ Client ผ่านการทดสอบครบ 171/171 tests (100% Pass):
+ระบบมี Automated Tests ครอบคลุมทั้งฝั่ง Server, Client UI, และ Playwright E2E ผ่านการทดสอบครบ **237/237 tests (100% Pass, 0 Failures, 0 Regression)**:
 
-1. **Server Unit / Integration / API Tests (114 tests):**
+1. **Server Unit / Integration / API Tests (156 tests):**
    ```bash
-   cd server
-   npm run test:api
+   npm run test:api --prefix server
    ```
-2. **Client UI Component Tests (47 tests):**
+2. **Client UI Component Tests (60 tests):**
    ```bash
-   cd client
-   npm run test:ui
+   npm run test:ui --prefix client
    ```
-3. **End-to-End (E2E) Tests via Playwright (10 tests):**
+3. **End-to-End (E2E) Tests via Playwright (21 tests across Desktop & Mobile):**
    ```bash
    npx playwright test
    ```
