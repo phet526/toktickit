@@ -6,7 +6,7 @@
 ## Pull Requests I authored (reviewed by my partner)
 | PR | Branch | Reviewer verdict |
 |:---|:-------|:-----------------|
-| [#46](https://github.com/phet526/toktickit/pull/46) | `feat/lab4-specs` | Changes Requested (Resolved) |
+| [#46](https://github.com/phet526/toktickit/pull/46) | `feat/lab4-specs` | Approved (Merged) |
 | [#47](https://github.com/phet526/toktickit/pull/47) | `feat/lab4-actions-taken-foundation` | Approved (Merged) |
 | [#48](https://github.com/phet526/toktickit/pull/48) | `feat/lab4-actions-taken-ui` | Approved (Merged) |
 | [#49](https://github.com/phet526/toktickit/pull/49) | `feat/lab4-ticket-workflow` | Approved (Merged) |
