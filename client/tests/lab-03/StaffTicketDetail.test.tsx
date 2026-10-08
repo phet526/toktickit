@@ -19,7 +19,8 @@ vi.mock("../../src/api", () => ({
   createInternalNote: vi.fn(),
   getActiveStaffList: vi.fn(),
   indicateProblemResolved: vi.fn(),
-  deleteAttachment: vi.fn()
+  deleteAttachment: vi.fn(),
+  getActionsTaken: vi.fn().mockResolvedValue({ ticketId: 101, ticketNo: "TKT-2026-00001", data: [] })
 }));
 
 describe("UI-04: Staff Ticket Detail & Operations Component Tests", () => {

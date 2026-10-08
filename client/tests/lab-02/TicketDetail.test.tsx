@@ -8,7 +8,8 @@ import * as api from "../../src/api";
 vi.mock("../../src/api", () => ({
   getTicketById: vi.fn(),
   deleteAttachment: vi.fn(),
-  getPublicComments: vi.fn().mockResolvedValue([])
+  getPublicComments: vi.fn().mockResolvedValue([]),
+  getActionsTaken: vi.fn().mockResolvedValue({ ticketId: 1, ticketNo: "TKT-TEST", data: [] })
 }));
 
 describe("TicketDetail Component - Soft Delete Attachment", () => {

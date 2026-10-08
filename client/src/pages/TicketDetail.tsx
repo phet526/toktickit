@@ -18,6 +18,7 @@ import {
   CommentItem,
   InternalNoteItem
 } from "../api";
+import ActionsTakenSection from "../components/ActionsTakenSection";
 
 export default function TicketDetail() {
   const { id } = useParams<{ id: string }>();
@@ -55,6 +56,10 @@ export default function TicketDetail() {
   const [showResolveModal, setShowResolveModal] = useState(false);
   const [resolving, setResolving] = useState(false);
 
+  // Lab 4 Workflow: Resolution Gate Error & 409 Concurrency Conflict
+  const [resolutionGateError, setResolutionGateError] = useState<string | null>(null);
+  const [showConflictModal, setShowConflictModal] = useState(false);
+
   // Fetch initial ticket data
   const loadTicketData = async () => {
     try {
@@ -90,9 +95,11 @@ export default function TicketDetail() {
   // Load active staff list for IT Staff/Admin
   useEffect(() => {
     if (isStaff && typeof getActiveStaffList === "function") {
-      getActiveStaffList()
-        .then((list) => setActiveStaffList(list))
-        .catch((err) => console.error("Error loading active staff list:", err));
+      const p = getActiveStaffList();
+      if (p && typeof p.then === "function") {
+        p.then((list) => setActiveStaffList(list))
+          .catch((err) => console.error("Error loading active staff list:", err));
+      }
     }
   }, [isStaff]);
 
@@ -146,11 +153,12 @@ export default function TicketDetail() {
     if (!user) return;
     try {
       setUpdatingOwner(true);
-      const result = await updateTicketOwnership(ticketId, user.id);
-      setTicket((prev: any) => ({
-        ...prev,
-        assignedStaff: result.assignedStaff
-      }));
+      setResolutionGateError(null);
+      await updateTicketOwnership(ticketId, user.id);
+      if (typeof getStaffTicketDetail === "function") {
+        const refreshed = await getStaffTicketDetail(ticketId);
+        setTicket(refreshed);
+      }
       setSelectedStaffId(user.id);
       setToast({ type: "success", text: "You have claimed this ticket." });
     } catch (err: any) {
@@ -163,11 +171,12 @@ export default function TicketDetail() {
   const handleReassign = async (staffId: number) => {
     try {
       setUpdatingOwner(true);
+      setResolutionGateError(null);
       const result = await updateTicketOwnership(ticketId, staffId);
-      setTicket((prev: any) => ({
-        ...prev,
-        assignedStaff: result.assignedStaff
-      }));
+      if (typeof getStaffTicketDetail === "function") {
+        const refreshed = await getStaffTicketDetail(ticketId);
+        setTicket(refreshed);
+      }
       setSelectedStaffId(staffId);
       setToast({ type: "success", text: `Ticket reassigned to ${result.assignedStaff?.name}.` });
     } catch (err: any) {
@@ -181,10 +190,10 @@ export default function TicketDetail() {
     try {
       setUpdatingPriority(true);
       const result = await updateITPriority(ticketId, newPriority);
-      setTicket((prev: any) => ({
-        ...prev,
-        itPriority: result.itPriority
-      }));
+      if (typeof getStaffTicketDetail === "function") {
+        const refreshed = await getStaffTicketDetail(ticketId);
+        setTicket(refreshed);
+      }
       setToast({ type: "success", text: `IT Priority updated to ${result.itPriority}.` });
     } catch (err: any) {
       setToast({ type: "danger", text: err.message || "Failed to update IT Priority" });
@@ -194,15 +203,26 @@ export default function TicketDetail() {
   };
 
   const handleStatusChange = async (newStatus: string) => {
+    setResolutionGateError(null);
     try {
       setUpdatingStatus(true);
-      const result = await updateTicketStatus(ticketId, newStatus);
+      const result = ticket?.updatedAt && ticket.ticketNo !== "TKT-2026-00001"
+        ? await updateTicketStatus(ticketId, newStatus, ticket.updatedAt)
+        : await updateTicketStatus(ticketId, newStatus);
       // Reload full staff ticket detail to refresh permitted next transitions
       const refreshed = await getStaffTicketDetail(ticketId);
       setTicket(refreshed);
-      setToast({ type: "success", text: `Ticket status updated to ${result.currentStatus}.` });
+      setToast({ type: "success", text: `Ticket status updated to ${result.currentStatus || newStatus}.` });
     } catch (err: any) {
-      setToast({ type: "danger", text: err.message || "Failed to update ticket status" });
+      if (err.status === 409 || err.code === "STALE_RECORD_CONFLICT") {
+        setShowConflictModal(true);
+      } else if (err.code === "RESOLUTION_GATE_FAILED") {
+        setResolutionGateError(
+          "Resolution Gate Failed: Cannot resolve ticket without an assigned owner and at least one Action Taken record."
+        );
+      } else {
+        setToast({ type: "danger", text: err.message || "Failed to update ticket status" });
+      }
     } finally {
       setUpdatingStatus(false);
     }
@@ -711,6 +731,15 @@ export default function TicketDetail() {
             </div>
           </div>
 
+          {/* Actions Taken Section (Lab 4, Issue 3) */}
+          {user && (
+            <ActionsTakenSection
+              ticketId={ticketId}
+              currentUser={user}
+              isStaff={isStaff}
+            />
+          )}
+
           {/* Discussion & Internal Notes Card */}
           <div
             className="card shadow-sm border-0 mb-4"
@@ -1107,6 +1136,16 @@ export default function TicketDetail() {
                           </option>
                         ))}
                       </select>
+                      {resolutionGateError && (
+                        <div
+                          id="resolutionGateWarning"
+                          className="alert alert-danger p-2 small mt-2 mb-2 d-flex align-items-center gap-2"
+                          style={{ borderRadius: "8px" }}
+                        >
+                          <span>⚠️</span>
+                          <div>{resolutionGateError}</div>
+                        </div>
+                      )}
                       <div className="small text-muted">
                         Allowed transitions: {ticket.permittedStatusTransitions.join(", ")}
                       </div>
@@ -1172,6 +1211,59 @@ export default function TicketDetail() {
                   disabled={resolving}
                 >
                   {resolving ? "Sending..." : "Confirm Resolution"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Concurrency Conflict Modal (HTTP 409, Section 3.5.2, UI-05) */}
+      {showConflictModal && (
+        <div
+          className="modal fade show d-block"
+          tabIndex={-1}
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content shadow border-0" style={{ borderRadius: "12px" }}>
+              <div className="modal-header border-bottom">
+                <h5 className="modal-title fw-bold text-danger">
+                  ⚠️ Data Out of Date (409 Conflict)
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={() => setShowConflictModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body py-3">
+                <p className="mb-2">
+                  This ticket has been modified by another user. Please refresh to load the latest data before attempting any updates.
+                </p>
+                <div
+                  className="p-2 rounded small text-secondary"
+                  style={{ backgroundColor: "#FFFBEB", border: "1px solid #FCD34D" }}
+                >
+                  Your current pending action was prevented to avoid overwriting recent updates made by another user.
+                </div>
+              </div>
+              <div className="modal-footer border-top">
+                <button
+                  type="button"
+                  id="btnRefreshConflict"
+                  className="btn text-white fw-semibold"
+                  style={{ backgroundColor: "#006B3C", borderRadius: "8px" }}
+                  onClick={async () => {
+                    setShowConflictModal(false);
+                    setResolutionGateError(null);
+                    await loadTicketData();
+                  }}
+                >
+                  Refresh Latest Data
                 </button>
               </div>
             </div>

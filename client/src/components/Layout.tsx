@@ -10,6 +10,11 @@ interface LayoutProps {
 export default function Layout({ requesterName, onLogout }: LayoutProps) {
   const location = useLocation();
   const auth = useAuth();
+  const [isNavOpen, setIsNavOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsNavOpen(false);
+  }, [location.pathname]);
   
   const currentUser = auth.user;
   const displayName = requesterName || currentUser?.name || "User";
@@ -65,24 +70,34 @@ export default function Layout({ requesterName, onLogout }: LayoutProps) {
           <button 
             className="navbar-toggler border-0" 
             type="button" 
-            data-bs-toggle="collapse" 
-            data-bs-target="#navbarNav"
+            onClick={() => setIsNavOpen(!isNavOpen)}
             aria-controls="navbarNav"
-            aria-expanded="false"
+            aria-expanded={isNavOpen}
             aria-label="Toggle navigation"
+            id="btnNavbarToggler"
           >
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          <div className="collapse navbar-collapse" id="navbarNav">
+          <div className={`collapse navbar-collapse ${isNavOpen ? "show" : ""}`} id="navbarNav">
             {/* Role-Based Nav Items */}
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               {role === "REQUESTER" && (
                 <>
                   <li className="nav-item">
                     <Link 
-                      className={`nav-link px-3 ${location.pathname === "/my-tickets" || location.pathname === "/" ? "active fw-semibold" : ""}`} 
+                      className={`nav-link px-3 ${location.pathname === "/requester/dashboard" || location.pathname === "/" ? "active fw-semibold" : ""}`} 
+                      to="/requester/dashboard"
+                      id="navRequesterDashboard"
+                    >
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link 
+                      className={`nav-link px-3 ${location.pathname === "/my-tickets" ? "active fw-semibold" : ""}`} 
                       to="/my-tickets"
+                      id="navMyTickets"
                     >
                       My Tickets
                     </Link>
@@ -91,6 +106,7 @@ export default function Layout({ requesterName, onLogout }: LayoutProps) {
                     <Link 
                       className={`nav-link px-3 ${location.pathname === "/create-ticket" ? "active fw-semibold" : ""}`} 
                       to="/create-ticket"
+                      id="navCreateTicket"
                     >
                       Create Ticket
                     </Link>
@@ -99,22 +115,44 @@ export default function Layout({ requesterName, onLogout }: LayoutProps) {
               )}
 
               {role === "IT_STAFF" && (
-                <li className="nav-item">
-                  <Link 
-                    className={`nav-link px-3 ${location.pathname.startsWith("/staff") ? "active fw-semibold" : ""}`} 
-                    to="/staff/queue"
-                  >
-                    My Queue
-                  </Link>
-                </li>
+                <>
+                  <li className="nav-item">
+                    <Link 
+                      className={`nav-link px-3 ${location.pathname === "/staff/dashboard" || location.pathname === "/" ? "active fw-semibold" : ""}`} 
+                      to="/staff/dashboard"
+                      id="navStaffDashboard"
+                    >
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link 
+                      className={`nav-link px-3 ${location.pathname === "/staff/queue" ? "active fw-semibold" : ""}`} 
+                      to="/staff/queue"
+                      id="navStaffQueue"
+                    >
+                      Ticket Queue
+                    </Link>
+                  </li>
+                </>
               )}
 
               {role === "ADMINISTRATOR" && (
                 <>
                   <li className="nav-item">
                     <Link 
-                      className={`nav-link px-3 ${location.pathname.startsWith("/staff") ? "active fw-semibold" : ""}`} 
+                      className={`nav-link px-3 ${location.pathname === "/staff/dashboard" || location.pathname === "/" ? "active fw-semibold" : ""}`} 
+                      to="/staff/dashboard"
+                      id="navAdminDashboard"
+                    >
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link 
+                      className={`nav-link px-3 ${location.pathname === "/staff/queue" ? "active fw-semibold" : ""}`} 
                       to="/staff/queue"
+                      id="navAdminQueue"
                     >
                       Ticket Queue
                     </Link>
@@ -123,6 +161,7 @@ export default function Layout({ requesterName, onLogout }: LayoutProps) {
                     <Link 
                       className={`nav-link px-3 ${location.pathname.startsWith("/admin") ? "active fw-semibold" : ""}`} 
                       to="/admin/users"
+                      id="navUserManagement"
                     >
                       User Management
                     </Link>

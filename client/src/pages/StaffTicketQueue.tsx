@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   getStaffTickets,
   checkSystem,
@@ -47,6 +47,10 @@ export function getPriorityBadgeStyle(priority: string) {
 }
 
 export default function StaffTicketQueue() {
+  const [searchParams] = useSearchParams();
+  const initialStatus = searchParams.get("status") || "all";
+  const initialOwner = searchParams.get("owner") || "all";
+
   const [tickets, setTickets] = useState<StaffTicketItem[]>([]);
   const [meta, setMeta] = useState<StaffTicketPaginationMeta>({
     totalItems: 0,
@@ -62,12 +66,19 @@ export default function StaffTicketQueue() {
   // Filters State
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [status, setStatus] = useState("all");
+  const [status, setStatus] = useState(initialStatus);
   const [category, setCategory] = useState("all");
   const [priority, setPriority] = useState("all");
-  const [owner, setOwner] = useState("all");
+  const [owner, setOwner] = useState(initialOwner);
   const [page, setPage] = useState(1);
   const limit = 10;
+
+  useEffect(() => {
+    const urlStatus = searchParams.get("status");
+    const urlOwner = searchParams.get("owner");
+    if (urlStatus !== null) setStatus(urlStatus);
+    if (urlOwner !== null) setOwner(urlOwner);
+  }, [searchParams]);
 
   // Debounce search input
   useEffect(() => {

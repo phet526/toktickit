@@ -36,3 +36,39 @@ export function normalizeITPriority(priority: string): string {
   const match = PERMITTED_IT_PRIORITIES.find((p) => p.toLowerCase() === priority.toLowerCase());
   return match || priority;
 }
+
+export interface ResolutionGateCheckResult {
+  canResolve: boolean;
+  hasOwner: boolean;
+  actionsCount: number;
+}
+
+/**
+ * BR-08, AC-08: Resolution Gate Checker
+ * ตั๋วจะเปลี่ยนเป็น Resolved ได้ ต้องผ่าน 2 เงื่อนไข:
+ * 1. มีผู้รับผิดชอบหลัก (hasOwner = true)
+ * 2. มีบันทึก Actions Taken อย่างน้อย 1 รายการ (actionsCount >= 1)
+ */
+export function checkResolutionGate(
+  assignedStaffId: number | null | undefined,
+  actionsCount: number
+): ResolutionGateCheckResult {
+  const hasOwner = assignedStaffId !== null && assignedStaffId !== undefined;
+  const canResolve = hasOwner && actionsCount >= 1;
+  return {
+    canResolve,
+    hasOwner,
+    actionsCount
+  };
+}
+
+/**
+ * BR-11, AC-11: Optimistic Concurrency Timestamp Checker
+ */
+export function isTimestampStale(clientUpdatedAt: string | Date | undefined, dbUpdatedAt: Date): boolean {
+  if (!clientUpdatedAt) return false;
+  const clientTime = new Date(clientUpdatedAt).getTime();
+  const dbTime = new Date(dbUpdatedAt).getTime();
+  return clientTime !== dbTime;
+}
+
